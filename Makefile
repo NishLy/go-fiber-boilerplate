@@ -4,7 +4,7 @@ export
 .PHONY: run build migrate-up migrate-down swagger
 
 run:
-	go run cmd/server/main.go
+	air 
 
 build:
 	go build -o bin/$(APP_NAME) cmd/server/main.go

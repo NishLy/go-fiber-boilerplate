@@ -1,9 +1,9 @@
 package app
 
 import (
-	"go-boiler-plate/internal/config"
-	"go-boiler-plate/internal/kafka"
-	"go-boiler-plate/internal/ws"
+	"github.com/NishLy/go-fiber-boilerplate/internal/config"
+	"github.com/NishLy/go-fiber-boilerplate/internal/kafka"
+	"github.com/NishLy/go-fiber-boilerplate/internal/ws"
 )
 
 type App struct {

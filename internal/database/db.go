@@ -1,7 +1,7 @@
 package database
 
 import (
-	"go-boiler-plate/internal/config"
+	"github.com/NishLy/go-fiber-boilerplate/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

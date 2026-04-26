@@ -14,6 +14,8 @@ type Config struct {
 	DBNAME      string
 	KafkaBroker string
 	KafkaTopic  string
+	REDIS_HOST  string
+	REDIS_PORT  string
 }
 
 var cfg *Config
@@ -41,7 +43,17 @@ func Load() (*Config, error) {
 		DBNAME:      viper.GetString("DB_NAME"),
 		KafkaBroker: viper.GetString("KAFKA_BROKER"),
 		KafkaTopic:  viper.GetString("KAFKA_TOPIC"),
+		REDIS_HOST:  viper.GetString("REDIS_HOST"),
+		REDIS_PORT:  viper.GetString("REDIS_PORT"),
 	}
 
 	return cfg, nil
+}
+
+func Get() *Config {
+	cfg, err := Load()
+	if err != nil {
+		panic(err)
+	}
+	return cfg
 }

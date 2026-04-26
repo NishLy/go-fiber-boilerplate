@@ -1,10 +1,9 @@
 package auth
 
 import (
-	"go-boiler-plate/internal/user"
-	"go-boiler-plate/pkg/utils"
-	"go-boiler-plate/pkg/validator"
-
+	"github.com/NishLy/go-fiber-boilerplate/internal/user"
+	"github.com/NishLy/go-fiber-boilerplate/pkg/utils"
+	"github.com/NishLy/go-fiber-boilerplate/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )

@@ -1,17 +1,16 @@
 package main
 
 import (
-	"go-boiler-plate/internal/config"
-	"go-boiler-plate/internal/database"
-	middleware "go-boiler-plate/middlewares"
-	"go-boiler-plate/pkg/logger"
-	"go-boiler-plate/routes"
-
+	"github.com/NishLy/go-fiber-boilerplate/internal/app"
+	"github.com/NishLy/go-fiber-boilerplate/internal/config"
+	"github.com/NishLy/go-fiber-boilerplate/internal/database"
+	"github.com/NishLy/go-fiber-boilerplate/internal/kafka"
+	"github.com/NishLy/go-fiber-boilerplate/internal/ws"
+	middleware "github.com/NishLy/go-fiber-boilerplate/middlewares"
+	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
+	"github.com/NishLy/go-fiber-boilerplate/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
-	"go-boiler-plate/internal/app"
-	"go-boiler-plate/internal/kafka"
-	"go-boiler-plate/internal/ws"
 	"go.uber.org/zap"
 )
 

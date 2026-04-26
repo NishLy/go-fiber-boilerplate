@@ -1,11 +1,10 @@
 package routes
 
 import (
-	"go-boiler-plate/internal/app"
-	"go-boiler-plate/internal/auth"
-	"go-boiler-plate/internal/database"
-	"go-boiler-plate/internal/ws"
-
+	"github.com/NishLy/go-fiber-boilerplate/internal/app"
+	"github.com/NishLy/go-fiber-boilerplate/internal/auth"
+	"github.com/NishLy/go-fiber-boilerplate/internal/database"
+	"github.com/NishLy/go-fiber-boilerplate/internal/ws"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 	fiberSwagger "github.com/swaggo/fiber-swagger"

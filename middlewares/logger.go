@@ -3,8 +3,7 @@ package middleware
 import (
 	"time"
 
-	"go-boiler-plate/pkg/logger"
-
+	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )

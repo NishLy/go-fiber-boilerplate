@@ -1,9 +1,12 @@
 package user
 
-import "gorm.io/gorm"
+import (
+	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
+	"gorm.io/gorm"
+)
 
 type UserHandler interface {
-	GetUsers() ([]User, error)
+	GetUsers() ([]domain.User, error)
 }
 
 type userHandler struct {
@@ -15,6 +18,6 @@ func NewUserHandler(db *gorm.DB) UserHandler {
 }
 
 // GetUsers implements [UserHandler].
-func (u *userHandler) GetUsers() ([]User, error) {
+func (u *userHandler) GetUsers() ([]domain.User, error) {
 	panic("unimplemented")
 }

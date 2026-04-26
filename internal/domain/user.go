@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/NishLy/go-fiber-boilerplate/pkg"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -19,5 +20,14 @@ type User struct {
 
 func (user *User) BeforeCreate(_ *gorm.DB) error {
 	user.ID = uuid.New() // Generate UUID before create
+
+	hashedPassword, err := pkg.HashPassword(user.Password)
+
+	if err != nil {
+		return err
+	}
+
+	user.Password = hashedPassword
+
 	return nil
 }

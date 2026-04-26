@@ -11,10 +11,10 @@ type AuthHandler interface {
 }
 
 type authHandler struct {
-	authService *JWTService
+	authService *authService
 }
 
-func NewAuthHandler(authService *JWTService) AuthHandler {
+func NewAuthHandler(authService *authService) AuthHandler {
 	return &authHandler{authService: authService}
 }
 

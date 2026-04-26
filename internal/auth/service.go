@@ -1,28 +1,60 @@
 package auth
 
 import (
-	"time"
+	"context"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
+	"github.com/NishLy/go-fiber-boilerplate/internal/token"
+	"github.com/NishLy/go-fiber-boilerplate/internal/user"
+	"github.com/NishLy/go-fiber-boilerplate/pkg"
 )
 
-type JWTService struct {
-	secret []byte
+type AuthServiceInterface interface {
+	Login(ctx context.Context, email, password string) (string, error)
+	Register(ctx context.Context, req RegisterRequest) (string, error)
 }
 
-func NewJWTService(secret string) *JWTService {
-	return &JWTService{
-		secret: []byte(secret),
+type authService struct {
+	userService  user.UserService
+	tokenService token.TokenService
+}
+
+func NewAuthService(userService user.UserService, tokenService token.TokenService) *authService {
+	return &authService{
+		userService:  userService,
+		tokenService: tokenService,
 	}
 }
 
-func (j *JWTService) GenerateToken(userID uint) (string, error) {
-	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+func (j *authService) Login(ctx context.Context, email, password string) (string, error) {
+	user, err := j.userService.GetUserFromEmail(ctx, email)
+	if err != nil {
+		return "", err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	if !pkg.CheckPasswordHash(password, user.Password) {
+		return "", err
+	}
 
-	return token.SignedString(j.secret)
+	tokenStr, err := j.tokenService.GenerateAccessToken(ctx, user.ID.String())
+	if err != nil {
+		return "", err
+	}
+
+	return tokenStr, nil
+}
+
+func (j *authService) Register(ctx context.Context, req RegisterRequest) (*domain.User, error) {
+	user := domain.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	err := j.userService.RegisterUser(ctx, &user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

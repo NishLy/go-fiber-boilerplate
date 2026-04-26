@@ -11,9 +11,9 @@ import (
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *domain.User) error
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
-	GetUserByID(ctx context.Context, id uint) (*domain.User, error)
+	GetUserByID(ctx context.Context, id string) (*domain.User, error)
 	UpdateUser(ctx context.Context, user *domain.User) error
-	DeleteUser(ctx context.Context, id uint) error
+	DeleteUser(ctx context.Context, id string) error
 }
 
 type userRepository struct {
@@ -56,7 +56,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*dom
 	return &user, nil
 }
 
-func (r *userRepository) GetUserByID(ctx context.Context, id uint) (*domain.User, error) {
+func (r *userRepository) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
 	db, err := database.GetDB(database.GetIndentifier(ctx), false)
 	if err != nil {
 		return nil, database.Wrap(err)
@@ -86,7 +86,7 @@ func (r *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 	return nil
 }
 
-func (r *userRepository) DeleteUser(ctx context.Context, id uint) error {
+func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
 	db, err := database.GetDB(database.GetIndentifier(ctx), false)
 	if err != nil {
 		return database.Wrap(err)

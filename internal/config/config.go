@@ -5,17 +5,18 @@ import (
 )
 
 type Config struct {
-	Port        string
-	JWTSecret   string
-	DBHOST      string
-	DBPORT      string
-	DBUSER      string
-	DBPASS      string
-	DBNAME      string
-	KafkaBroker string
-	KafkaTopic  string
-	REDIS_HOST  string
-	REDIS_PORT  string
+	Port               string
+	JWTSecret          string
+	DBHOST             string
+	DBPORT             string
+	DBUSER             string
+	DBPASS             string
+	DBNAME             string
+	KafkaBroker        string
+	KafkaTopic         string
+	REDIS_HOST         string
+	REDIS_PORT         string
+	DB_DEVELOPMENT_URL string
 }
 
 var cfg *Config
@@ -34,17 +35,18 @@ func Load() (*Config, error) {
 	}
 
 	cfg = &Config{
-		Port:        viper.GetString("PORT"),
-		JWTSecret:   viper.GetString("JWT_SECRET"),
-		DBHOST:      viper.GetString("DB_HOST"),
-		DBPORT:      viper.GetString("DB_PORT"),
-		DBUSER:      viper.GetString("DB_USER"),
-		DBPASS:      viper.GetString("DB_PASS"),
-		DBNAME:      viper.GetString("DB_NAME"),
-		KafkaBroker: viper.GetString("KAFKA_BROKER"),
-		KafkaTopic:  viper.GetString("KAFKA_TOPIC"),
-		REDIS_HOST:  viper.GetString("REDIS_HOST"),
-		REDIS_PORT:  viper.GetString("REDIS_PORT"),
+		Port:               viper.GetString("PORT"),
+		JWTSecret:          viper.GetString("JWT_SECRET"),
+		DBHOST:             viper.GetString("DB_HOST"),
+		DBPORT:             viper.GetString("DB_PORT"),
+		DBUSER:             viper.GetString("DB_USER"),
+		DBPASS:             viper.GetString("DB_PASS"),
+		DBNAME:             viper.GetString("DB_NAME"),
+		KafkaBroker:        viper.GetString("KAFKA_BROKER"),
+		KafkaTopic:         viper.GetString("KAFKA_TOPIC"),
+		REDIS_HOST:         viper.GetString("REDIS_HOST"),
+		REDIS_PORT:         viper.GetString("REDIS_PORT"),
+		DB_DEVELOPMENT_URL: viper.GetString("DB_DEVELOPMENT_URL"),
 	}
 
 	return cfg, nil

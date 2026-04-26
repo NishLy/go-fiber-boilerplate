@@ -103,3 +103,15 @@ func CleanupDBs(maxIdleTime int64) {
 		}
 	}
 }
+
+func GetDBFromContext(ctx context.Context) (*gorm.DB, error) {
+	db, ok := ctx.Value("db").(*gorm.DB)
+	if !ok {
+		return nil, Wrap(fmt.Errorf("failed to get DB from context"))
+	}
+	return db, nil
+}
+
+func SetContextWithTx(ctx context.Context, tx *gorm.DB) context.Context {
+	return context.WithValue(ctx, "db", tx)
+}

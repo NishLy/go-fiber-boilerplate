@@ -11,3 +11,6 @@ migrate-diff:
 
 migrate-hash:
 	atlas migrate hash
+
+migrate-apply:
+	go run ./cmd/atlas/apply

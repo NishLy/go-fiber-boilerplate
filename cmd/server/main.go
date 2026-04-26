@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/app"
 	"github.com/NishLy/go-fiber-boilerplate/internal/config"
-	"github.com/NishLy/go-fiber-boilerplate/internal/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/kafka"
 	"github.com/NishLy/go-fiber-boilerplate/internal/ws"
 	middleware "github.com/NishLy/go-fiber-boilerplate/middlewares"
@@ -38,10 +37,6 @@ func main() {
 	}
 
 	routes.Setup(appContainer, fiberApp)
-
-	if database.Connect(configApp); database.DB == nil {
-		logger.Log.Fatal("Failed to connect to database")
-	}
 
 	logger.Log.Info("Starting server on :3000")
 

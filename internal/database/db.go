@@ -1,21 +1,95 @@
 package database
 
 import (
+	"fmt"
+	"sync"
+	"time"
+
 	"github.com/NishLy/go-fiber-boilerplate/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-var DB *gorm.DB
+var dbMap = make(map[string]*DBStruct)
+var mutex sync.Mutex
 
-func Connect(config *config.Config) {
-	dsn := "host=" + config.DBHOST + " user=" + config.DBUSER + " password=" + config.DBPASS + " dbname=" + config.DBNAME + " port=" + config.DBPORT + " sslmode=disable TimeZone=UTC"
+type DBStruct struct {
+	LastUsed int64
+	DB       *gorm.DB
+}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+// GetDB returns a tenant-specific database connection. It creates a new connection if one does not already exist for the given identifier.
+func GetDB(identifier string, withLogger bool) (DBStruct, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
 
-	if err != nil {
-		panic(err)
+	if dbStruct, ok := dbMap[identifier]; ok {
+		dbStruct.LastUsed = time.Now().Unix()
+		return *dbStruct, nil
 	}
 
-	DB = db
+	config := config.Get()
+
+	dsn := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable&TimeZone=Asia/Jakarta",
+		config.DBUSER, config.DBPASS, config.DBHOST, config.DBPORT, config.DBNAME,
+	)
+
+	dbConfig := &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+		TranslateError:         true,
+		Logger:                 logger.Default.LogMode(logger.Silent),
+	}
+
+	if withLogger {
+		dbConfig.Logger = logger.Default.LogMode(logger.Info)
+	}
+
+	db, err := gorm.Open(postgres.Open(dsn), dbConfig)
+
+	if err != nil {
+		return DBStruct{}, err
+	}
+
+	sqlDB, _ := db.DB()
+	sqlDB.SetMaxOpenConns(5)
+	sqlDB.SetMaxIdleConns(2)
+
+	dbMap[identifier] = &DBStruct{
+		DB:       db,
+		LastUsed: time.Now().Unix(),
+	}
+	return *dbMap[identifier], nil
+}
+
+func CloseDB(identifier string) error {
+	mutex.Lock()
+	defer mutex.Unlock()
+	if dbStruct, ok := dbMap[identifier]; ok {
+		sqlDB, err := dbStruct.DB.DB()
+		if err != nil {
+			return err
+		}
+		if err := sqlDB.Close(); err != nil {
+			return err
+		}
+		delete(dbMap, identifier)
+	}
+	return nil
+}
+
+func CleanupDBs(maxIdleTime int64) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	currentTime := time.Now().Unix()
+	for identifier, dbStruct := range dbMap {
+		if currentTime-dbStruct.LastUsed > maxIdleTime {
+			err := CloseDB(identifier)
+			if err != nil {
+				fmt.Printf("Error closing DB for identifier %s: %v\n", identifier, err)
+			}
+		}
+	}
 }

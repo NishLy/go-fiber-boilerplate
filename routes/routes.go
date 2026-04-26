@@ -3,7 +3,6 @@ package routes
 import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/app"
 	"github.com/NishLy/go-fiber-boilerplate/internal/auth"
-	"github.com/NishLy/go-fiber-boilerplate/internal/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/ws"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
@@ -13,7 +12,7 @@ import (
 func Setup(appContainer *app.App, app *fiber.App) {
 	// init  auth handler and service
 	authService := auth.NewJWTService(appContainer.Config.JWTSecret)
-	authHandler := auth.NewAuthHandler(database.DB, authService)
+	authHandler := auth.NewAuthHandler(authService)
 
 	// Swagger route
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)

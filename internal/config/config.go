@@ -16,7 +16,12 @@ type Config struct {
 	KafkaTopic  string
 }
 
+var cfg *Config
+
 func Load() (*Config, error) {
+	if cfg != nil {
+		return cfg, nil
+	}
 
 	viper.SetConfigFile(".env")
 	viper.AutomaticEnv()
@@ -26,7 +31,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	cfg := Config{
+	cfg = &Config{
 		Port:        viper.GetString("PORT"),
 		JWTSecret:   viper.GetString("JWT_SECRET"),
 		DBHOST:      viper.GetString("DB_HOST"),
@@ -38,5 +43,5 @@ func Load() (*Config, error) {
 		KafkaTopic:  viper.GetString("KAFKA_TOPIC"),
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }

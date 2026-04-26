@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -17,6 +18,15 @@ var mutex sync.Mutex
 type DBStruct struct {
 	LastUsed int64
 	DB       *gorm.DB
+}
+
+func GetIndentifier(ctx context.Context) string {
+	tenantID, ok := ctx.Value("tenant_id").(string)
+	if !ok || tenantID == "" {
+		return "default"
+	}
+
+	return tenantID
 }
 
 // GetDB returns a tenant-specific database connection. It creates a new connection if one does not already exist for the given identifier.

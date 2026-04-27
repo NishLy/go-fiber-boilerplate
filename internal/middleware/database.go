@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 
+	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -17,7 +18,16 @@ func InjectTenantIdentifier() fiber.Handler {
 			})
 		}
 
+		db, err := database.GetDB(tenantID, true)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to connect to database",
+			})
+		}
+
 		ctx := context.WithValue(c.Context(), "tenant_id", tenantID)
+		ctx = context.WithValue(ctx, "db", db)
+
 		c.SetUserContext(ctx)
 		c.Locals("tenant_id", tenantID)
 

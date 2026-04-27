@@ -30,6 +30,9 @@ func Setup(appContainer *app.App, app *fiber.App) {
 	authService := auth.NewAuthService(userService, tokenService)
 	auth.AuthRouter(api, authService)
 
+	// init user handler and service
+	user.UserRouter(api, &userService)
+
 	// Swagger route
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 

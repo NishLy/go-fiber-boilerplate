@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/NishLy/go-fiber-boilerplate/config"
+	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -98,7 +99,7 @@ func CleanupDBs(maxIdleTime time.Duration) {
 		if currentTime-dbStruct.LastUsed > int64(maxIdleTime.Seconds()) {
 			err := CloseDB(identifier)
 			if err != nil {
-				fmt.Printf("Error closing DB for identifier %s: %v\n", identifier, err)
+				fmt.Printf("Failed to close idle DB connection for identifier %s: %v\n", identifier, err)
 			}
 		}
 	}
@@ -107,7 +108,9 @@ func CleanupDBs(maxIdleTime time.Duration) {
 func GetDBFromContext(ctx context.Context) (*gorm.DB, error) {
 	db, ok := ctx.Value("db").(*gorm.DB)
 	if !ok {
-		return nil, Wrap(fmt.Errorf("failed to get DB from context"))
+		return nil, apperror.InternalErr(
+			fmt.Errorf("no database connection found in context"),
+		)
 	}
 	return db, nil
 }

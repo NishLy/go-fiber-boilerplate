@@ -16,10 +16,10 @@ type UserHandler interface {
 
 type userHandler struct {
 	logger      *zap.SugaredLogger
-	userService *userService
+	userService UserService
 }
 
-func NewUserHandler(logger *zap.SugaredLogger, userService *userService) UserHandler {
+func NewUserHandler(logger *zap.SugaredLogger, userService UserService) UserHandler {
 	return &userHandler{
 		logger:      logger,
 		userService: userService,

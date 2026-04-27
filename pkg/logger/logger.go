@@ -5,6 +5,7 @@ import (
 )
 
 var Log *zap.Logger
+var Sugar *zap.SugaredLogger
 
 func Init() {
 	logger, err := zap.NewProduction()
@@ -13,4 +14,5 @@ func Init() {
 	}
 
 	Log = logger
+	Sugar = logger.Sugar()
 }

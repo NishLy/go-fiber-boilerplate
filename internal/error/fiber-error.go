@@ -3,41 +3,55 @@ package apperror
 import (
 	"errors"
 
+	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 )
 
+// httpStatus maps app error codes to HTTP status codes.
+var httpStatus = map[Code]int{
+	NotFound:  fiber.StatusNotFound,
+	Duplicate: fiber.StatusConflict,
+	Invalid:   fiber.StatusBadRequest,
+	Internal:  fiber.StatusInternalServerError,
+}
+
 func ErrorHandler(ctx *fiber.Ctx, err error) error {
-	var e *Error
-
-	if errors.As(err, &e) {
-		switch e.Code {
-		case NotFound:
-			return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": e.Message,
-			})
-		case Duplicate:
-			return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"error": e.Message,
-			})
-		case Invalid:
-			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": e.Message,
-			})
-		default:
-			return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "internal server error",
-			})
-		}
+	var appErr *Error
+	if errors.As(err, &appErr) {
+		return respondError(ctx, appErr)
 	}
 
-	// If it's a Fiber error, use its status code and message
-	if e, ok := err.(*fiber.Error); ok {
-		return ctx.Status(e.Code).JSON(fiber.Map{
-			"error": e.Message,
-		})
+	// Fiber's own errors (e.g. 404 from unmatched routes, body parser failures)
+	var fiberErr *fiber.Error
+	if errors.As(err, &fiberErr) {
+		return jsonError(ctx, fiberErr.Code, fiberErr.Message)
 	}
 
-	return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		"error": "internal server error",
+	// Truly unexpected — log with full detail
+	logger.Sugar.Errorf("unhandled error: %+v", err)
+	return jsonError(ctx, fiber.StatusInternalServerError, "internal server error")
+}
+
+func respondError(ctx *fiber.Ctx, e *Error) error {
+	status, ok := httpStatus[e.Code]
+	if !ok {
+		status = fiber.StatusInternalServerError
+	}
+
+	// Only expose the message for client errors; mask internals
+	msg := e.Message
+	if status == fiber.StatusInternalServerError {
+		logger.Sugar.Errorf("%v", e)
+		msg = "internal server error"
+	}
+
+	return jsonError(ctx, status, msg)
+}
+
+// jsonError is the single place that writes error responses.
+func jsonError(ctx *fiber.Ctx, status int, msg string) error {
+	return ctx.Status(status).JSON(fiber.Map{
+		"code":  status,
+		"error": msg,
 	})
 }

@@ -1,6 +1,10 @@
 package main
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/NishLy/go-fiber-boilerplate/config"
@@ -45,7 +49,38 @@ func main() {
 
 	logger.Log.Info("Starting server on :3000")
 
-	if err := fiberApp.Listen(":3000"); err != nil {
-		logger.Log.Fatal("Failed to start server", zap.Error(err))
+	// Server configuration
+	address := ":3000"
+	// Channel to capture server errors
+	serverErrors := make(chan error, 1)
+	// Start server in a separate goroutine
+	go startServer(fiberApp, address, serverErrors)
+	// Handle graceful shutdown and server errors
+	handleGracefulShutdown(context.Background(), fiberApp, serverErrors)
+}
+
+func startServer(app *fiber.App, address string, serverErrors chan<- error) {
+	if err := app.Listen(address); err != nil {
+		serverErrors <- err
 	}
+}
+
+func handleGracefulShutdown(ctx context.Context, app *fiber.App, serverErrors <-chan error) {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	sugar := logger.Log.Sugar()
+
+	select {
+	case err := <-serverErrors:
+		sugar.Fatalf("Server error: %v", err)
+	case <-quit:
+		logger.Log.Info("Shutting down server...")
+		if err := app.Shutdown(); err != nil {
+			sugar.Fatalf("Error during server shutdown: %v", err)
+		}
+	case <-ctx.Done():
+		sugar.Info("Context cancelled, shutting down server...")
+	}
+
+	sugar.Info("Server gracefully stopped")
 }

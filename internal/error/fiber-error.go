@@ -30,6 +30,13 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 		}
 	}
 
+	// If it's a Fiber error, use its status code and message
+	if e, ok := err.(*fiber.Error); ok {
+		return ctx.Status(e.Code).JSON(fiber.Map{
+			"error": e.Message,
+		})
+	}
+
 	return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"error": "internal server error",
 	})

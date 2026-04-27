@@ -90,12 +90,12 @@ func CloseDB(identifier string) error {
 	return nil
 }
 
-func CleanupDBs(maxIdleTime int64) {
+func CleanupDBs(maxIdleTime time.Duration) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	currentTime := time.Now().Unix()
 	for identifier, dbStruct := range dbMap {
-		if currentTime-dbStruct.LastUsed > maxIdleTime {
+		if currentTime-dbStruct.LastUsed > int64(maxIdleTime.Seconds()) {
 			err := CloseDB(identifier)
 			if err != nil {
 				fmt.Printf("Error closing DB for identifier %s: %v\n", identifier, err)

@@ -1,10 +1,13 @@
 package main
 
 import (
+	"time"
+
 	"github.com/NishLy/go-fiber-boilerplate/config"
 	"github.com/NishLy/go-fiber-boilerplate/internal/app"
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"github.com/NishLy/go-fiber-boilerplate/internal/middleware"
+	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/ws"
 	"github.com/NishLy/go-fiber-boilerplate/internal/routes"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
@@ -25,6 +28,9 @@ func main() {
 	fiberApp := fiber.New(fiber.Config{
 		ErrorHandler: apperror.ErrorHandler,
 	})
+
+	// Start a goroutine to periodically clean up idle database connections
+	database.CleanupDBs(time.Second * 60)
 
 	// middlewares
 	fiberApp.Use(middleware.Logger())

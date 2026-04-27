@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/NishLy/go-fiber-boilerplate/internal/config"
+	"github.com/NishLy/go-fiber-boilerplate/config"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
 )

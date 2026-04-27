@@ -1,13 +1,11 @@
 package main
 
 import (
+	"github.com/NishLy/go-fiber-boilerplate/config"
 	"github.com/NishLy/go-fiber-boilerplate/internal/app"
-	"github.com/NishLy/go-fiber-boilerplate/internal/config"
-	"github.com/NishLy/go-fiber-boilerplate/internal/kafka"
-	"github.com/NishLy/go-fiber-boilerplate/internal/ws"
-	middleware "github.com/NishLy/go-fiber-boilerplate/middlewares"
+	"github.com/NishLy/go-fiber-boilerplate/internal/middleware"
+	"github.com/NishLy/go-fiber-boilerplate/internal/platform/ws"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
-	"github.com/NishLy/go-fiber-boilerplate/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"go.uber.org/zap"
@@ -30,10 +28,7 @@ func main() {
 
 	appContainer := &app.App{
 		Config: configApp,
-		Producers: map[string]*kafka.Producer{
-			"default": kafka.NewProducer(configApp.KafkaBroker, configApp.KafkaTopic),
-		},
-		WsHub: ws.NewHub(),
+		WsHub:  ws.NewHub(),
 	}
 
 	routes.Setup(appContainer, fiberApp)

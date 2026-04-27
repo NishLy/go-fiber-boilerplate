@@ -3,8 +3,8 @@ package user
 import (
 	"context"
 
-	"github.com/NishLy/go-fiber-boilerplate/internal/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
+	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
 	"go.uber.org/zap"
 )
 

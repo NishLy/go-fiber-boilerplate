@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/NishLy/go-fiber-boilerplate/internal/config"
+	"github.com/NishLy/go-fiber-boilerplate/config"
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 )

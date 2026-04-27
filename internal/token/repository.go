@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/NishLy/go-fiber-boilerplate/internal/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
+	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"

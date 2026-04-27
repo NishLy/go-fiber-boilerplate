@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/NishLy/go-fiber-boilerplate/internal/config"
+	"github.com/NishLy/go-fiber-boilerplate/config"
 )
 
 func main() {

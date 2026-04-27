@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/NishLy/go-fiber-boilerplate/internal/config"
+	"github.com/NishLy/go-fiber-boilerplate/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

@@ -1,4 +1,4 @@
-package redis
+package cache
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/NishLy/go-fiber-boilerplate/internal/config"
+	"github.com/NishLy/go-fiber-boilerplate/config"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/go-redis/redis/v8"
 )

@@ -1,8 +1,8 @@
 package auth
 
 import (
+	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"github.com/NishLy/go-fiber-boilerplate/internal/response"
-	"github.com/NishLy/go-fiber-boilerplate/pkg/utils"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 )
@@ -35,14 +35,17 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 	var req LoginRequest
 
 	if err := c.BodyParser(&req); err != nil {
-		return utils.BadRequest(c, "Invalid request body")
+		return apperror.BadRequestErr(err)
 	}
 
 	if err := validator.ValidateStruct(req); err != nil {
-		return utils.BadRequest(c, err.Error())
+		return apperror.BadRequestErr(err)
 	}
 
-	token := "token" // Placeholder for token generation logic
+	token, err := a.authService.Login(c.Context(), req.Email, req.Password)
+	if err != nil {
+		return err
+	}
 
 	return c.Status(fiber.StatusOK).
 		JSON(response.GenericSuccessResponse[fiber.Map]{
@@ -69,11 +72,16 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 
 	var req RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
-		return utils.BadRequest(c, "Invalid request body")
+		return apperror.BadRequestErr(err)
 	}
 
 	if err := validator.ValidateStruct(req); err != nil {
-		return utils.BadRequest(c, err.Error())
+		return apperror.BadRequestErr(err)
+	}
+
+	_, err := a.authService.Register(c.Context(), req)
+	if err != nil {
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).

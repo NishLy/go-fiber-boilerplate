@@ -5,6 +5,7 @@ import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/app"
 	"github.com/NishLy/go-fiber-boilerplate/internal/middleware"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/ws"
+	"github.com/NishLy/go-fiber-boilerplate/internal/routes"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
@@ -38,5 +39,4 @@ func main() {
 	if err := fiberApp.Listen(":3000"); err != nil {
 		logger.Log.Fatal("Failed to start server", zap.Error(err))
 	}
-
 }

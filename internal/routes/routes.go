@@ -14,6 +14,7 @@ import (
 
 func Setup(appContainer *app.App, app *fiber.App) {
 	logger.Log.Info("Setting up routes")
+	api := app.Group("/api")
 
 	sugarLogger := logger.Log.Sugar()
 
@@ -27,13 +28,12 @@ func Setup(appContainer *app.App, app *fiber.App) {
 
 	// init  auth handler and service
 	authService := auth.NewAuthService(userService, tokenService)
-	authHandler := auth.NewAuthHandler(authService)
+	auth.AuthRouter(api, authService)
 
 	// Swagger route
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 
 	// API routes
-	api := app.Group("/api")
 
 	app.Get("/ws", websocket.New(ws.Handler(appContainer.WsHub)))
 

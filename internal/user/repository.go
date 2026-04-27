@@ -106,12 +106,12 @@ func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
 func (r *userRepository) GetUsers(ctx context.Context, pagination request.PaginationRequest) ([]domain.User, paginator.Cursor, error) {
 	var users []domain.User
 
-	fmt.Printf("Get db from context for GetUsers: %v %s\n ", ctx.Value("db"), database.GetIndentifier(ctx))
-
 	db, err := database.GetDBFromContext(ctx)
 	if err != nil {
 		return nil, paginator.Cursor{}, err
 	}
+
+	fmt.Printf("Limit: %d, SortBy: %s, Sort: %s, AfterCursor: %s, Search: %s\n", pagination.Limit, pagination.SortBy, pagination.Sort, pagination.AfterCursor, pagination.Search)
 
 	p := paginator.New(&paginator.Config{
 		// clean up the sort_by input to prevent SQL injection

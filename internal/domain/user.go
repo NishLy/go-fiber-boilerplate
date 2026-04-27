@@ -34,14 +34,13 @@ func (user *User) BeforeCreate(_ *gorm.DB) error {
 
 func GetSortColumn(input string) string {
 	whitelist := map[string]string{
-		"created": "created_at",
-		"name":    "name",
-		"id":      "id",
+		"created": "CreatedAt",
+		"name":    "Name",
+		"id":      "ID",
 	}
 
 	if val, ok := whitelist[input]; ok {
 		return val
 	}
-
-	return "created_at"
+	return "CreatedAt" // Default
 }

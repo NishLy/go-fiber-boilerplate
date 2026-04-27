@@ -2,22 +2,73 @@ package user
 
 import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
-	"gorm.io/gorm"
+	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
+	"github.com/NishLy/go-fiber-boilerplate/internal/request"
+	"github.com/NishLy/go-fiber-boilerplate/internal/response"
+	"github.com/NishLy/go-fiber-boilerplate/pkg/validator"
+	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type UserHandler interface {
-	GetUsers() ([]domain.User, error)
+	GetUsers(c *fiber.Ctx) error
 }
 
 type userHandler struct {
-	DB *gorm.DB
+	logger      *zap.SugaredLogger
+	userService *userService
 }
 
-func NewUserHandler(db *gorm.DB) UserHandler {
-	return &userHandler{DB: db}
+func NewUserHandler(logger *zap.SugaredLogger, userService *userService) UserHandler {
+	return &userHandler{
+		logger:      logger,
+		userService: userService,
+	}
 }
 
-// GetUsers implements [UserHandler].
-func (u *userHandler) GetUsers() ([]domain.User, error) {
-	panic("unimplemented")
+// GetUsers retrieves a paginated list of users.
+//
+//	@Summary		Get users
+//	@Description	Retrieve a paginated list of all users
+//	@Tags			users
+//	@Accept			query
+//	@Produce		json
+//	@Param			before	query		string	false	"Cursor before"
+//	@Param			after	query		string	false	"Cursor after"
+//	@Param			limit	query		int		false	"Limit"
+//	@Success		200		{object}	response.PagedDataResponse[domain.User]
+//	@Failure		400		{object}	apperror.AppError
+//	@Router			/users [get]
+func (h *userHandler) GetUsers(c *fiber.Ctx) error {
+	var req request.PaginationRequest
+
+	if err := c.QueryParser(&req); err != nil {
+		return apperror.BadRequestErr(err)
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return apperror.BadRequestErr(err)
+	}
+
+	users, cursor, err := h.userService.GetUsers(c.Context(), req)
+
+	if err != nil {
+		return err
+	}
+
+	hasNext := cursor.After != nil
+	hasPrev := cursor.Before != nil
+
+	return c.Status(fiber.StatusOK).JSON(response.PagedDataResponse[domain.User]{
+		GenericResponse: response.GenericResponse{
+			Message: "Users retrieved successfully",
+		},
+		Data: users,
+		Meta: response.PaginationMeta{
+			Before:  *cursor.Before,
+			After:   *cursor.After,
+			HasNext: hasNext,
+			HasPrev: hasPrev,
+		},
+	})
 }

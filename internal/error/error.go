@@ -42,3 +42,7 @@ func DuplicateErr(err error) *Error {
 func InternalErr(err error) *Error {
 	return New(Internal, "internal error", err)
 }
+
+func BadRequestErr(err error) *Error {
+	return New(Invalid, "invalid request", err)
+}

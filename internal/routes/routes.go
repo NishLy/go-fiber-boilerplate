@@ -7,14 +7,14 @@ import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/token"
 	"github.com/NishLy/go-fiber-boilerplate/internal/user"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
-	fiberSwagger "github.com/swaggo/fiber-swagger"
 )
 
 func Setup(appContainer *app.App, app *fiber.App) {
 	logger.Log.Info("Setting up routes")
-	api := app.Group("/api")
+	api := app.Group("/api").Group("/v1")
 
 	sugarLogger := logger.Log.Sugar()
 
@@ -34,7 +34,14 @@ func Setup(appContainer *app.App, app *fiber.App) {
 	user.UserRouter(api, &userService)
 
 	// Swagger route
-	app.Get("/swagger/*", fiberSwagger.WrapHandler)
+	cfg := swagger.Config{
+		BasePath: "/api/v1",
+		FilePath: "./docs/api/v1/swagger.json",
+		Path:     "swagger",
+		Title:    "Swagger API Docs",
+	}
+
+	app.Use(swagger.New(cfg))
 
 	// API routes
 

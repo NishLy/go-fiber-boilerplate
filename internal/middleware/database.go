@@ -12,6 +12,12 @@ func InjectTenantIdentifier() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		tenantID := c.Get("X-Tenant-ID")
 
+		// whitelist /swagger/* and /docs/* for testing purposes
+		path := c.Path()
+		if path == "/swagger" || path == "/docs" || (len(path) > 8 && path[:8] == "/swagger/") || (len(path) > 6 && path[:6] == "/docs/") {
+			return c.Next()
+		}
+
 		if tenantID == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "X-Tenant-ID header is required",

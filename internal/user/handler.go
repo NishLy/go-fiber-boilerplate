@@ -28,17 +28,17 @@ func NewUserHandler(logger *zap.SugaredLogger, userService UserService) UserHand
 
 // GetUsers retrieves a paginated list of users.
 //
-//	@Summary		Get users
-//	@Description	Retrieve a paginated list of all users
-//	@Tags			users
-//	@Accept			query
-//	@Produce		json
-//	@Param			before	query		string	false	"Cursor before"
-//	@Param			after	query		string	false	"Cursor after"
-//	@Param			limit	query		int		false	"Limit"
-//	@Success		200		{object}	response.PagedDataResponse[domain.User]
-//	@Failure		400		{object}	apperror.AppError
-//	@Router			/users [get]
+//		@Summary      Get users
+//		@Description  Retrieve a paginated list of all users
+//		@Tags         users
+//		@Produce      json
+//		@Param        before  query     string  false  "Cursor before"
+//		@Param        after   query     string  false  "Cursor after"
+//		@Param        limit   query     int     false  "Limit"
+//	 @Param		  search  query     string  false  "Search term"
+//		@Success      200     {object}  response.PagedDataResponse[domain.User]
+//		@Failure      400     {object}  apperror.Error
+//		@Router       /users [get]
 func (h *userHandler) GetUsers(c *fiber.Ctx) error {
 	var req request.PaginationRequest
 

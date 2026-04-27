@@ -46,7 +46,7 @@ func main() {
 	fiberApp.Use(middleware.RecoverConfig())
 	fiberApp.Use(middleware.LimiterConfig())
 	fiberApp.Use(middleware.CORSConfig())
-	fiberApp.Use(middleware.InjectTenantIdentifier())
+	// fiberApp.Use(middleware.InjectTenantIdentifier())
 
 	appContainer := &app.App{
 		Config: configApp,

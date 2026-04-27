@@ -2,8 +2,10 @@ package auth
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
+	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"github.com/NishLy/go-fiber-boilerplate/internal/token"
 	"github.com/NishLy/go-fiber-boilerplate/internal/user"
 	"github.com/NishLy/go-fiber-boilerplate/pkg"
@@ -29,11 +31,11 @@ func NewAuthService(userService user.UserService, tokenService token.TokenServic
 func (j *authService) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := j.userService.GetUserFromEmail(ctx, email)
 	if err != nil {
-		return "", err
+		return "", apperror.UnauthorizedErr(err)
 	}
 
 	if !pkg.CheckPasswordHash(password, user.Password) {
-		return "", err
+		return "", apperror.UnauthorizedErr(fmt.Errorf("invalid credentials"), "Invalid email or password")
 	}
 
 	tokenStr, err := j.tokenService.GenerateAccessToken(ctx, user.ID.String())

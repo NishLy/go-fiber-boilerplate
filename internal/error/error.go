@@ -11,10 +11,12 @@ import (
 type Code int
 
 const (
-	NotFound  Code = 404
-	Duplicate Code = 409
-	Internal  Code = 500
-	Invalid   Code = 400
+	NotFound         Code = 404
+	Duplicate        Code = 409
+	Internal         Code = 500
+	Invalid          Code = 400
+	PermissionDenied Code = 403
+	Unauthorized     Code = 401
 )
 
 // String makes Code implement fmt.Stringer for readable logging.
@@ -28,6 +30,10 @@ func (c Code) String() string {
 		return "INTERNAL"
 	case Invalid:
 		return "INVALID"
+	case PermissionDenied:
+		return "PERMISSION_DENIED"
+	case Unauthorized:
+		return "UNAUTHORIZED"
 	default:
 		return fmt.Sprintf("UNKNOWN(%d)", int(c))
 	}
@@ -68,10 +74,12 @@ func New(code Code, msg string, err error, data *interface{}) *Error {
 
 // Sentinel errors for use with errors.Is.
 var (
-	ErrNotFound  = &Error{Code: NotFound}
-	ErrDuplicate = &Error{Code: Duplicate}
-	ErrInternal  = &Error{Code: Internal}
-	ErrInvalid   = &Error{Code: Invalid}
+	ErrNotFound         = &Error{Code: NotFound}
+	ErrDuplicate        = &Error{Code: Duplicate}
+	ErrInternal         = &Error{Code: Internal}
+	ErrInvalid          = &Error{Code: Invalid}
+	ErrPermissionDenied = &Error{Code: PermissionDenied}
+	ErrUnauthorized     = &Error{Code: Unauthorized}
 )
 
 // Convenience constructors — accept an optional custom message.
@@ -96,6 +104,14 @@ func BadRequestErr(err error, msg ...string) *Error {
 func ValidationErr(response []response.ValidationError, msg ...string) *Error {
 	var data interface{} = response
 	return New(Invalid, firstOr(msg, "validation failed"), fmt.Errorf("%v", response), &data)
+}
+
+func PermissionDeniedErr(err error, msg ...string) *Error {
+	return New(PermissionDenied, firstOr(msg, "permission denied"), err, nil)
+}
+
+func UnauthorizedErr(err error, msg ...string) *Error {
+	return New(Unauthorized, firstOr(msg, "unauthorized"), err, nil)
 }
 
 // IsCode reports whether any error in err's chain has the given code.

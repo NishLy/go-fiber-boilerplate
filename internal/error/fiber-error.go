@@ -10,10 +10,12 @@ import (
 
 // httpStatus maps app error codes to HTTP status codes.
 var httpStatus = map[Code]int{
-	NotFound:  fiber.StatusNotFound,
-	Duplicate: fiber.StatusConflict,
-	Invalid:   fiber.StatusBadRequest,
-	Internal:  fiber.StatusInternalServerError,
+	NotFound:         fiber.StatusNotFound,
+	Duplicate:        fiber.StatusConflict,
+	Invalid:          fiber.StatusBadRequest,
+	Internal:         fiber.StatusInternalServerError,
+	PermissionDenied: fiber.StatusForbidden,
+	Unauthorized:     fiber.StatusUnauthorized,
 }
 
 func ErrorHandler(ctx *fiber.Ctx, err error) error {

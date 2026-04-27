@@ -78,7 +78,8 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 	}
 
 	if err := validator.ValidateStruct(req); err != nil {
-		return apperror.BadRequestErr(err)
+		validationErrors := apperror.ParseValidationErrors(err)
+		return apperror.ValidationErr(validationErrors)
 	}
 
 	_, err := a.authService.Register(c.UserContext(), req)

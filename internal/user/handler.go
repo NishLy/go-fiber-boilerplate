@@ -56,19 +56,17 @@ func (h *userHandler) GetUsers(c *fiber.Ctx) error {
 		return err
 	}
 
-	hasNext := cursor.After != nil
-	hasPrev := cursor.Before != nil
-
 	return c.Status(fiber.StatusOK).JSON(response.PagedDataResponse[domain.User]{
 		GenericResponse: response.GenericResponse{
+			Code:    fiber.StatusOK,
 			Message: "Users retrieved successfully",
 		},
 		Data: users,
 		Meta: response.PaginationMeta{
-			Before:  *cursor.Before,
-			After:   *cursor.After,
-			HasNext: hasNext,
-			HasPrev: hasPrev,
+			Before:  cursor.Before,
+			After:   cursor.After,
+			HasNext: cursor.After != nil,
+			HasPrev: cursor.Before != nil,
 		},
 	})
 }

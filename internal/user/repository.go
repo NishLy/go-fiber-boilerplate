@@ -120,7 +120,9 @@ func (r *userRepository) GetUsers(ctx context.Context, pagination request.Pagina
 		Order: paginator.Order(pagination.Sort),
 	})
 
-	p.SetAfterCursor(pagination.AfterCursor)
+	if pagination.AfterCursor != "" {
+		p.SetAfterCursor(pagination.AfterCursor)
+	}
 
 	query := db.Model(&domain.User{})
 

@@ -16,6 +16,8 @@ import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/routes"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"go.uber.org/zap"
 )
@@ -37,8 +39,14 @@ func main() {
 	database.CleanupDBs(time.Second * 60)
 
 	// middlewares
+	fiberApp.Use(helmet.New())
+	fiberApp.Use(compress.New())
 	fiberApp.Use(middleware.Logger())
 	fiberApp.Use(requestid.New())
+	fiberApp.Use(middleware.RecoverConfig())
+	fiberApp.Use(middleware.LimiterConfig())
+	fiberApp.Use(middleware.CORSConfig())
+	fiberApp.Use(middleware.InjectTenantIdentifier())
 
 	appContainer := &app.App{
 		Config: configApp,

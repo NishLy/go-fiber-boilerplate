@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
@@ -105,9 +106,11 @@ func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
 func (r *userRepository) GetUsers(ctx context.Context, pagination request.PaginationRequest) ([]domain.User, paginator.Cursor, error) {
 	var users []domain.User
 
+	fmt.Printf("Get db from context for GetUsers: %v %s\n ", ctx.Value("db"), database.GetIndentifier(ctx))
+
 	db, err := database.GetDBFromContext(ctx)
 	if err != nil {
-		return nil, paginator.Cursor{}, database.Wrap(err)
+		return nil, paginator.Cursor{}, err
 	}
 
 	p := paginator.New(&paginator.Config{

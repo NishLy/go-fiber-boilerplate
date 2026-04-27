@@ -50,7 +50,7 @@ func (h *userHandler) GetUsers(c *fiber.Ctx) error {
 		return apperror.BadRequestErr(err)
 	}
 
-	users, cursor, err := h.userService.GetUsers(c.Context(), req)
+	users, cursor, err := h.userService.GetUsers(c.UserContext(), req)
 
 	if err != nil {
 		return err

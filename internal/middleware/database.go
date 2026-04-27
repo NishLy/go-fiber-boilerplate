@@ -25,8 +25,8 @@ func InjectTenantIdentifier() fiber.Handler {
 			})
 		}
 
-		ctx := context.WithValue(c.Context(), "tenant_id", tenantID)
-		ctx = context.WithValue(ctx, "db", db)
+		ctx := context.WithValue(c.UserContext(), "db", db.DB)
+		ctx = context.WithValue(ctx, "tenant_id", tenantID)
 
 		c.SetUserContext(ctx)
 		c.Locals("tenant_id", tenantID)

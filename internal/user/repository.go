@@ -5,6 +5,8 @@ import (
 
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
+	"github.com/NishLy/go-fiber-boilerplate/internal/request"
+	"github.com/pilagod/gorm-cursor-paginator/v2/paginator"
 	"go.uber.org/zap"
 )
 
@@ -14,6 +16,7 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, id string) (*domain.User, error)
 	UpdateUser(ctx context.Context, user *domain.User) error
 	DeleteUser(ctx context.Context, id string) error
+	GetUsers(ctx context.Context, pagination request.PaginationRequest) ([]domain.User, paginator.Cursor, error)
 }
 
 type userRepository struct {
@@ -97,4 +100,40 @@ func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
 		return database.Wrap(err)
 	}
 	return nil
+}
+
+func (r *userRepository) GetUsers(ctx context.Context, pagination request.PaginationRequest) ([]domain.User, paginator.Cursor, error) {
+	var users []domain.User
+
+	db, err := database.GetDBFromContext(ctx)
+	if err != nil {
+		return nil, paginator.Cursor{}, database.Wrap(err)
+	}
+
+	p := paginator.New(&paginator.Config{
+		// clean up the sort_by input to prevent SQL injection
+		Keys:  []string{domain.GetSortColumn(pagination.SortBy)},
+		Limit: pagination.Limit,
+		Order: paginator.Order(pagination.Sort),
+	})
+
+	p.SetAfterCursor(pagination.AfterCursor)
+
+	query := db.Model(&domain.User{})
+
+	if pagination.Search != "" {
+		searchTerm := "%" + pagination.Search + "%"
+		query = query.Where("name ILIKE ? OR email ILIKE ?", searchTerm, searchTerm)
+	}
+
+	result, cursor, err := p.Paginate(query, &users)
+	if err != nil {
+		return nil, paginator.Cursor{}, database.Wrap(err)
+	}
+
+	if result.Error != nil {
+		return nil, paginator.Cursor{}, database.Wrap(result.Error)
+	}
+
+	return users, cursor, nil
 }

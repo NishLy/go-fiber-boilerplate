@@ -51,6 +51,7 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).
 		JSON(response.GenericSuccessResponse[fiber.Map]{
 			GenericResponse: response.GenericResponse{
+				Code:    fiber.StatusOK,
 				Message: "Login successful",
 			},
 			Data: fiber.Map{

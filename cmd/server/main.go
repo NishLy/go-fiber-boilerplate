@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/NishLy/go-fiber-boilerplate/config"
 	"github.com/NishLy/go-fiber-boilerplate/internal/app"
+	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"github.com/NishLy/go-fiber-boilerplate/internal/middleware"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/ws"
 	"github.com/NishLy/go-fiber-boilerplate/internal/routes"
@@ -21,7 +22,9 @@ func main() {
 		logger.Log.Fatal("Failed to load config", zap.Error(err))
 	}
 
-	fiberApp := fiber.New()
+	fiberApp := fiber.New(fiber.Config{
+		ErrorHandler: apperror.ErrorHandler,
+	})
 
 	// middlewares
 	fiberApp.Use(middleware.Logger())

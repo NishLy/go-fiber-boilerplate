@@ -3,6 +3,7 @@ package apperror
 import (
 	"errors"
 
+	"github.com/NishLy/go-fiber-boilerplate/internal/response"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/gofiber/fiber/v2"
 )
@@ -24,12 +25,12 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 	// Fiber's own errors (e.g. 404 from unmatched routes, body parser failures)
 	var fiberErr *fiber.Error
 	if errors.As(err, &fiberErr) {
-		return jsonError(ctx, fiberErr.Code, fiberErr.Message)
+		return jsonError(ctx, fiberErr.Code, fiberErr.Message, nil)
 	}
 
 	// Truly unexpected — log with full detail
 	logger.Sugar.Errorf("unhandled error: %+v", err)
-	return jsonError(ctx, fiber.StatusInternalServerError, "internal server error")
+	return jsonError(ctx, fiber.StatusInternalServerError, "internal server error", nil)
 }
 
 func respondError(ctx *fiber.Ctx, e *Error) error {
@@ -45,13 +46,14 @@ func respondError(ctx *fiber.Ctx, e *Error) error {
 		msg = "internal server error"
 	}
 
-	return jsonError(ctx, status, msg)
+	return jsonError(ctx, status, msg, e.Data)
 }
 
 // jsonError is the single place that writes error responses.
-func jsonError(ctx *fiber.Ctx, status int, msg string) error {
-	return ctx.Status(status).JSON(fiber.Map{
-		"code":  status,
-		"error": msg,
+func jsonError(ctx *fiber.Ctx, status int, msg string, data interface{}) error {
+	return ctx.Status(status).JSON(response.ErrorResponse{
+		Code:  status,
+		Error: msg,
+		Data:  data,
 	})
 }

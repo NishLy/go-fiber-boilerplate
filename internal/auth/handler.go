@@ -39,10 +39,11 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 	}
 
 	if err := validator.ValidateStruct(req); err != nil {
-		return apperror.BadRequestErr(err)
+		validationErrors := apperror.ParseValidationErrors(err)
+		return apperror.ValidationErr(validationErrors)
 	}
 
-	token, err := a.authService.Login(c.Context(), req.Email, req.Password)
+	token, err := a.authService.Login(c.UserContext(), req.Email, req.Password)
 	if err != nil {
 		return err
 	}
@@ -79,7 +80,7 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 		return apperror.BadRequestErr(err)
 	}
 
-	_, err := a.authService.Register(c.Context(), req)
+	_, err := a.authService.Register(c.UserContext(), req)
 	if err != nil {
 		return err
 	}

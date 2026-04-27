@@ -3,6 +3,8 @@ package apperror
 import (
 	"errors"
 	"fmt"
+
+	"github.com/NishLy/go-fiber-boilerplate/internal/response"
 )
 
 // Code represents an application-level error code.
@@ -37,6 +39,7 @@ type Error struct {
 	Code    Code
 	Message string
 	Err     error
+	Data    *interface{} // Optional field for additional error context
 }
 
 func (e *Error) Error() string {
@@ -59,8 +62,8 @@ func (e *Error) Is(target error) bool {
 }
 
 // New constructs an Error. Pass nil for err if there is no underlying cause.
-func New(code Code, msg string, err error) *Error {
-	return &Error{Code: code, Message: msg, Err: err}
+func New(code Code, msg string, err error, data *interface{}) *Error {
+	return &Error{Code: code, Message: msg, Err: err, Data: data}
 }
 
 // Sentinel errors for use with errors.Is.
@@ -75,19 +78,24 @@ var (
 // If msg is empty, a default is used.
 
 func NotFoundErr(err error, msg ...string) *Error {
-	return New(NotFound, firstOr(msg, "resource not found"), err)
+	return New(NotFound, firstOr(msg, "resource not found"), err, nil)
 }
 
 func DuplicateErr(err error, msg ...string) *Error {
-	return New(Duplicate, firstOr(msg, "duplicate data"), err)
+	return New(Duplicate, firstOr(msg, "duplicate data"), err, nil)
 }
 
 func InternalErr(err error, msg ...string) *Error {
-	return New(Internal, firstOr(msg, "internal server error"), err)
+	return New(Internal, firstOr(msg, "internal server error"), err, nil)
 }
 
 func BadRequestErr(err error, msg ...string) *Error {
-	return New(Invalid, firstOr(msg, "bad request"), err)
+	return New(Invalid, firstOr(msg, "bad request"), err, nil)
+}
+
+func ValidationErr(response []response.ValidationError, msg ...string) *Error {
+	var data interface{} = response
+	return New(Invalid, firstOr(msg, "validation failed"), fmt.Errorf("%v", response), &data)
 }
 
 // IsCode reports whether any error in err's chain has the given code.

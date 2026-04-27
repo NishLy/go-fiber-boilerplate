@@ -22,3 +22,16 @@ type PagedDataResponse[T any] struct {
 	Data []T            `json:"data"`
 	Meta PaginationMeta `json:"meta"`
 }
+
+type ValidationError struct {
+	Field   string `json:"field"`
+	Tag     string `json:"tag"`
+	Value   string `json:"value,omitempty"`
+	Message string `json:"message"`
+}
+
+type ErrorResponse struct {
+	Code  int         `json:"code"`
+	Error string      `json:"error"`
+	Data  interface{} `json:"data,omitempty"`
+}

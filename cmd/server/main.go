@@ -15,10 +15,10 @@ import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/ws"
 	"github.com/NishLy/go-fiber-boilerplate/internal/routes"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/helmet"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/compress"
+	"github.com/gofiber/fiber/v3/middleware/helmet"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
 	"go.uber.org/zap"
 )
 
@@ -31,9 +31,7 @@ func main() {
 		logger.Log.Fatal("Failed to load config", zap.Error(err))
 	}
 
-	fiberApp := fiber.New(fiber.Config{
-		ErrorHandler: apperror.ErrorHandler,
-	})
+	fiberApp := fiber.New(fiber.Config{ErrorHandler: apperror.ErrorHandler})
 
 	// Start a goroutine to periodically clean up idle database connections
 	database.CleanupDBs(time.Second * 60)

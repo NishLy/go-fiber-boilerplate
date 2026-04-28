@@ -4,12 +4,12 @@ import (
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"github.com/NishLy/go-fiber-boilerplate/internal/response"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/validator"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type AuthHandler interface {
-	Login(c *fiber.Ctx) error
-	Register(c *fiber.Ctx) error
+	Login(c fiber.Ctx) error
+	Register(c fiber.Ctx) error
 }
 
 type authHandler struct {
@@ -30,11 +30,11 @@ func NewAuthHandler(authService *authService) AuthHandler {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Router /auth/login [post]
-func (a *authHandler) Login(c *fiber.Ctx) error {
+func (a *authHandler) Login(c fiber.Ctx) error {
 
 	var req LoginRequest
 
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.Bind().Body(&req); err != nil {
 		return apperror.BadRequestErr(err)
 	}
 
@@ -43,7 +43,7 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		return apperror.ValidationErr(validationErrors)
 	}
 
-	token, err := a.authService.Login(c.UserContext(), req.Email, req.Password)
+	token, err := a.authService.Login(c.Context(), req.Email, req.Password)
 	if err != nil {
 		return err
 	}
@@ -70,10 +70,10 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Router /auth/register [post]
-func (a *authHandler) Register(c *fiber.Ctx) error {
+func (a *authHandler) Register(c fiber.Ctx) error {
 
 	var req RegisterRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.Bind().Body(&req); err != nil {
 		return apperror.BadRequestErr(err)
 	}
 
@@ -82,7 +82,7 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 		return apperror.ValidationErr(validationErrors)
 	}
 
-	_, err := a.authService.Register(c.UserContext(), req)
+	_, err := a.authService.Register(c.Context(), req)
 	if err != nil {
 		return err
 	}
@@ -93,3 +93,5 @@ func (a *authHandler) Register(c *fiber.Ctx) error {
 			Message: "Registration successful",
 		})
 }
+
+// fiber:context-methods migrated

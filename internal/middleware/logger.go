@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
 func Logger() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		start := time.Now()
 
 		// 1. Execute the next handler

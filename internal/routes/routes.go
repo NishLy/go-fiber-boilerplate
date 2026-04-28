@@ -3,17 +3,13 @@ package routes
 import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/app"
 	"github.com/NishLy/go-fiber-boilerplate/internal/auth"
-	"github.com/NishLy/go-fiber-boilerplate/internal/platform/ws"
 	"github.com/NishLy/go-fiber-boilerplate/internal/token"
 	"github.com/NishLy/go-fiber-boilerplate/internal/user"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
-	"github.com/gofiber/contrib/swagger"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/websocket/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func Setup(appContainer *app.App, app *fiber.App) {
-	logger.Log.Info("Setting up routes")
 	api := app.Group("/api").Group("/v1")
 
 	sugarLogger := logger.Log.Sugar()
@@ -33,18 +29,9 @@ func Setup(appContainer *app.App, app *fiber.App) {
 	// init user handler and service
 	user.UserRouter(api, &userService)
 
-	// Swagger route
-	cfg := swagger.Config{
-		BasePath: "/api/v1",
-		FilePath: "./docs/api/v1/swagger.json",
-		Path:     "swagger",
-		Title:    "Swagger API Docs",
-	}
+	// init docs route
+	DocsRoutes(api)
 
-	app.Use(swagger.New(cfg))
-
-	// API routes
-
-	app.Get("/ws", websocket.New(ws.Handler(appContainer.WsHub)))
+	// app.Get("/ws", websocket.New(ws.Handler(appContainer.WsHub)))
 
 }

@@ -108,7 +108,7 @@ func (r *userRepository) GetUsers(ctx context.Context, pagination request.Pagina
 
 	db, err := database.GetDBFromContext(ctx)
 	if err != nil {
-		return nil, paginator.Cursor{}, err
+		return nil, paginator.Cursor{}, database.Wrap(err)
 	}
 
 	fmt.Printf("Limit: %d, SortBy: %s, Sort: %s, AfterCursor: %s, Search: %s\n", pagination.Limit, pagination.SortBy, pagination.Sort, pagination.AfterCursor, pagination.Search)

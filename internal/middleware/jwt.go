@@ -2,8 +2,9 @@ package middleware
 
 import (
 	"github.com/NishLy/go-fiber-boilerplate/config"
-	"github.com/gofiber/fiber/v2"
-	jwtware "github.com/gofiber/jwt/v3"
+	jwtware "github.com/gofiber/contrib/v3/jwt"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/extractors"
 )
 
 func Protected() fiber.Handler {
@@ -14,6 +15,7 @@ func Protected() fiber.Handler {
 	}
 
 	return jwtware.New(jwtware.Config{
-		SigningKey: []byte(cfg.JWTSecret),
+		SigningKey: jwtware.SigningKey{Key: []byte(cfg.JWTSecret)},
+		Extractor:  extractors.FromAuthHeader("Bearer"),
 	})
 }

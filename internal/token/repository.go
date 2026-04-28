@@ -61,6 +61,10 @@ func (r *tokenRepository) SaveToken(ctx context.Context, userID string, token st
 		return nil
 	})
 
+	if err != nil {
+		return database.Wrap(err)
+	}
+
 	return nil
 }
 
@@ -110,7 +114,6 @@ func (r *tokenRepository) GetTokenByUserIDAndType(ctx context.Context, userID st
 
 func (r *tokenRepository) CleanupExpiredTokens(ctx context.Context) error {
 	db, err := database.GetDBFromContext(ctx)
-
 	if err != nil {
 		return database.Wrap(err)
 	}

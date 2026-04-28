@@ -6,12 +6,12 @@ import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/request"
 	"github.com/NishLy/go-fiber-boilerplate/internal/response"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/validator"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
 type UserHandler interface {
-	GetUsers(c *fiber.Ctx) error
+	GetUsers(c fiber.Ctx) error
 }
 
 type userHandler struct {
@@ -39,10 +39,10 @@ func NewUserHandler(logger *zap.SugaredLogger, userService UserService) UserHand
 //		@Success      200     {object}  response.PagedDataResponse[domain.User]
 //		@Failure      400     {object}  apperror.Error
 //		@Router       /users [get]
-func (h *userHandler) GetUsers(c *fiber.Ctx) error {
+func (h *userHandler) GetUsers(c fiber.Ctx) error {
 	var req request.PaginationRequest
 
-	if err := c.QueryParser(&req); err != nil {
+	if err := c.Bind().Query(&req); err != nil {
 		return apperror.BadRequestErr(err)
 	}
 
@@ -50,7 +50,7 @@ func (h *userHandler) GetUsers(c *fiber.Ctx) error {
 		return apperror.BadRequestErr(err)
 	}
 
-	users, cursor, err := h.userService.GetUsers(c.UserContext(), req)
+	users, cursor, err := h.userService.GetUsers(c.Context(), req)
 
 	if err != nil {
 		return err
@@ -70,3 +70,5 @@ func (h *userHandler) GetUsers(c *fiber.Ctx) error {
 		},
 	})
 }
+
+// fiber:context-methods migrated

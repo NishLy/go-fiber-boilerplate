@@ -2,7 +2,7 @@ package user
 
 import (
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func UserRouter(v1 fiber.Router, userService *UserService) {

@@ -50,6 +50,10 @@ func Get[T any](key string, expiration time.Duration, fallback func() (T, error)
 		return zero, err
 	}
 
+	if fallback == nil {
+		return zero, fmt.Errorf("cache miss for key %s and no fallback provided", key)
+	}
+
 	data, err := fallback()
 	if err != nil {
 		return zero, err
@@ -65,4 +69,14 @@ func Get[T any](key string, expiration time.Duration, fallback func() (T, error)
 func Delete(key string) error {
 	ctx := context.Background()
 	return GetRedis().Del(ctx, key).Err()
+}
+
+func Set[T any](key string, value T, expiration time.Duration) error {
+	ctx := context.Background()
+	bytes, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+
+	return GetRedis().Set(ctx, key, bytes, expiration).Err()
 }

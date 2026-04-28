@@ -3,8 +3,10 @@ package fga
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/NishLy/go-fiber-boilerplate/config"
+	"github.com/NishLy/go-fiber-boilerplate/internal/platform/cache"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/oklog/ulid"
 	"github.com/openfga/go-sdk/client"
@@ -37,6 +39,16 @@ func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
 		return client, nil
 	}
 
+	key := fmt.Sprintf("fga_client_%s", identifier)
+
+	cachedKey, _ := cache.Get[string](key, 0, nil)
+
+	if cachedKey != "" {
+		if client, exists := fgaClients[cachedKey]; exists {
+			return client, nil
+		}
+	}
+
 	logger.Sugar.Infof("Initialized new OpenFGA client for identifier %s", identifier)
 	var fgaClient *client.OpenFgaClient
 	var storeID *string
@@ -49,6 +61,7 @@ func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
 			return nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
 		}
 		fgaClients[*storeID] = fgaClient
+		cache.Set(key, *storeID, time.Hour)
 		return fgaClient, nil
 	} else {
 		storeID, err := CreateStore(context.Background(), identifier)
@@ -61,6 +74,7 @@ func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
 			return nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
 		}
 		fgaClients[*storeID] = fgaClient
+		cache.Set(key, *storeID, time.Hour)
 		return fgaClient, nil
 	}
 }

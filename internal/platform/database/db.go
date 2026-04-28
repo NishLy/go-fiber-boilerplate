@@ -8,6 +8,7 @@ import (
 
 	"github.com/NishLy/go-fiber-boilerplate/config"
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
+	appLogger "github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -99,7 +100,7 @@ func CleanupDBs(maxIdleTime time.Duration) {
 		if currentTime-dbStruct.LastUsed > int64(maxIdleTime.Seconds()) {
 			err := CloseDB(identifier)
 			if err != nil {
-				("Failed to close idle DB connection for identifier %s: %v\n", identifier, err)
+				appLogger.Sugar.Errorf("Failed to close DB for identifier %s: %v", identifier, err)
 			}
 		}
 	}

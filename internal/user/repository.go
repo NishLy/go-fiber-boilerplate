@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
@@ -110,8 +109,6 @@ func (r *userRepository) GetUsers(ctx context.Context, pagination request.Pagina
 	if err != nil {
 		return nil, paginator.Cursor{}, database.Wrap(err)
 	}
-
-	("Limit: %d, SortBy: %s, Sort: %s, AfterCursor: %s, Search: %s\n", pagination.Limit, pagination.SortBy, pagination.Sort, pagination.AfterCursor, pagination.Search)
 
 	p := paginator.New(&paginator.Config{
 		// clean up the sort_by input to prevent SQL injection

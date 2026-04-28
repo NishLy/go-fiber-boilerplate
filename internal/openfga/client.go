@@ -15,8 +15,6 @@ var fgaClients = make(map[string]*client.OpenFgaClient)
 func InitOpenFGA(indentifier *string) (*client.OpenFgaClient, error) {
 	cfg := config.Get()
 
-	("Initializing OpenFGA client for store ID: %s\n", *indentifier)
-
 	fgaClient, err := client.NewSdkClient(&client.ClientConfiguration{
 		ApiUrl:  cfg.OPEN_FGA_API_URL, // OpenFGA server address
 		StoreId: *indentifier,         // Created via CLI or API
@@ -58,12 +56,10 @@ func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
 			return nil, fmt.Errorf("failed to provision new store: %w", err)
 		}
 
-		("Provisioned new store with ID: %s\n", *storeID)
 		fgaClient, err = InitOpenFGA(storeID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
 		}
-		("FGA %v client initialized successfully for store ID: %s\n", fgaClient, *storeID)
 		fgaClients[*storeID] = fgaClient
 		return fgaClient, nil
 	}

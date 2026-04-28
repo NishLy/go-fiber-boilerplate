@@ -4,16 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NishLy/go-fiber-boilerplate/config"
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"github.com/NishLy/go-fiber-boilerplate/internal/token"
 	"github.com/NishLy/go-fiber-boilerplate/internal/user"
 	"github.com/NishLy/go-fiber-boilerplate/pkg"
+	jwt "github.com/NishLy/go-fiber-boilerplate/pkg/jwt"
 )
 
 type AuthServiceInterface interface {
 	Login(ctx context.Context, email, password string) (string, string, error)
 	Register(ctx context.Context, req RegisterRequest) (string, error)
+	RefreshToken(ctx context.Context, refreshToken string) (string, error)
 }
 
 type authService struct {
@@ -64,4 +67,26 @@ func (j *authService) Register(ctx context.Context, req RegisterRequest) (*domai
 	}
 
 	return &user, nil
+}
+
+func (j *authService) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
+	userId, err := jwt.VerifyToken(refreshToken, config.Get().JWTSecret, token.TokenTypeRefresh)
+
+	if err != nil {
+		return "", apperror.UnauthorizedErr(err, "Invalid refresh token")
+	}
+
+	// validate that the refresh token exists in the database
+	storedToken, err :=
+		j.tokenService.GetTokenFromUserID(ctx, userId, token.TokenTypeRefresh)
+
+	if err != nil {
+		return "", apperror.UnauthorizedErr(err, "Invalid refresh token")
+	}
+
+	if storedToken != refreshToken {
+		return "", apperror.UnauthorizedErr(fmt.Errorf("refresh token mismatch"), "Invalid refresh token")
+	}
+
+	return j.tokenService.GenerateAccessToken(ctx, userId)
 }

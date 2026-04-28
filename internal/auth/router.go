@@ -10,4 +10,5 @@ func AuthRouter(v1 fiber.Router, authService *authService) {
 
 	auth.Post("/login", authHandler.Login)
 	auth.Post("/register", authHandler.Register)
+	auth.Post("/refresh-token", authHandler.RefreshToken)
 }

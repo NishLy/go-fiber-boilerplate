@@ -11,6 +11,7 @@ import (
 type AuthHandler interface {
 	Login(c fiber.Ctx) error
 	Register(c fiber.Ctx) error
+	RefreshToken(c fiber.Ctx) error
 }
 
 type authHandler struct {
@@ -106,4 +107,42 @@ func (a *authHandler) Register(c fiber.Ctx) error {
 		})
 }
 
-// fiber:context-methods migrated
+// RefreshToken godoc
+// @Summary Refresh access token
+// @Description Refresh the access token using the refresh token stored in the cookie
+// @Tags auth
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /auth/refresh [post]
+func (a *authHandler) RefreshToken(c fiber.Ctx) error {
+	refreshToken := c.Cookies("refresh_token")
+
+	if refreshToken == "" {
+		return apperror.UnauthorizedErr(nil, "No refresh token provided")
+	}
+
+	newToken, err := a.authService.RefreshToken(c.Context(), refreshToken)
+	if err != nil {
+		return err
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		HTTPOnly: true,
+		Secure:   config.Get().ENV == "production",
+		SameSite: "Strict",
+	})
+
+	return c.Status(fiber.StatusOK).
+		JSON(response.GenericSuccessResponse[fiber.Map]{
+			GenericResponse: response.GenericResponse{
+				Code:    fiber.StatusOK,
+				Message: "Token refreshed successfully",
+			},
+			Data: fiber.Map{
+				"token": newToken,
+			},
+		})
+}

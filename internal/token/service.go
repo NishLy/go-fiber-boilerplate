@@ -16,6 +16,7 @@ type TokenService interface {
 	GenerateAccessToken(ctx context.Context, userID string) (string, error)
 	DeleteTokenByUserID(ctx context.Context, userID string, tokenType string) error
 	GenerateForgotPasswordToken(ctx context.Context, userID string) (string, error)
+	GetTokenFromUserID(ctx context.Context, userID string, tokenType string) (string, error)
 }
 
 type tokenService struct {
@@ -63,4 +64,8 @@ func (s *tokenService) DeleteTokenByUserID(ctx context.Context, userID string, t
 
 func (s *tokenService) GenerateForgotPasswordToken(ctx context.Context, userID string) (string, error) {
 	return s.GenerateToken(ctx, userID, time.Hour*1, TokenTypeResetPassword)
+}
+
+func (s *tokenService) GetTokenFromUserID(ctx context.Context, userID string, tokenType string) (string, error) {
+	return s.r.GetTokenFromUserID(ctx, userID, tokenType)
 }

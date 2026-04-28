@@ -16,6 +16,7 @@ type TokenRepository interface {
 	DeleteTokenByUserID(ctx context.Context, userID string, tokenType string) error
 	DeleteAllTokensByUserID(ctx context.Context, userID string) error
 	GetTokenByUserIDAndType(ctx context.Context, userID string, tokenType string) (*domain.Token, error)
+	GetTokenFromUserID(ctx context.Context, userID string, tokenType string) (string, error)
 	CleanupExpiredTokens(ctx context.Context) error
 }
 
@@ -125,4 +126,13 @@ func (r *tokenRepository) CleanupExpiredTokens(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (r *tokenRepository) GetTokenFromUserID(ctx context.Context, userID string, tokenType string) (string, error) {
+	tokenRecord, err := r.GetTokenByUserIDAndType(ctx, userID, tokenType)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenRecord.Token, nil
 }

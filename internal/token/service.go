@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/NishLy/go-fiber-boilerplate/config"
-	"github.com/golang-jwt/jwt/v4"
+	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
+	pkg "github.com/NishLy/go-fiber-boilerplate/pkg/jwt"
 	"go.uber.org/zap"
 )
 
@@ -30,18 +31,13 @@ func NewTokenService(logger zap.SugaredLogger, r TokenRepository) TokenService {
 }
 
 func (s *tokenService) GenerateToken(ctx context.Context, userID string, expires time.Duration, tokenType string) (string, error) {
-	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(expires).Unix(),
-		"type":    tokenType,
-	}
+	cfg := config.Get()
 
-	config := config.Get()
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString([]byte(config.JWTSecret))
+	tokenStr, err := pkg.GenerateToken(userID, cfg.JWTSecret, tokenType, int64(expires.Seconds()))
+
 	if err != nil {
-		s.logger.Errorf("Failed to sign token: %v", err)
-		return "", err
+		s.logger.Errorf("Failed to generate token: %v", err)
+		return "", apperror.InternalErr(err)
 	}
 
 	err = s.r.SaveToken(ctx, userID, tokenStr, tokenType, expires)

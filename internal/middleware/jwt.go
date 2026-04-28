@@ -1,10 +1,14 @@
 package middleware
 
 import (
+	"context"
+	"strings"
+
 	"github.com/NishLy/go-fiber-boilerplate/config"
-	jwtware "github.com/gofiber/contrib/v3/jwt"
+	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
+	t "github.com/NishLy/go-fiber-boilerplate/internal/token"
+	pkg "github.com/NishLy/go-fiber-boilerplate/pkg/jwt"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/extractors"
 )
 
 func Protected() fiber.Handler {
@@ -14,8 +18,25 @@ func Protected() fiber.Handler {
 		panic(err)
 	}
 
-	return jwtware.New(jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: []byte(cfg.JWTSecret)},
-		Extractor:  extractors.FromAuthHeader("Bearer"),
-	})
+	return func(c fiber.Ctx) error {
+		authHeader := c.Get("Authorization")
+		token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+
+		if token == "" {
+			return apperror.UnauthorizedErr(nil, "Please authenticate")
+		}
+
+		userID, err := pkg.VerifyToken(token, cfg.JWTSecret, t.TokenTypeAccess)
+
+		if err != nil {
+			return apperror.UnauthorizedErr(nil, "Please authenticate")
+		}
+
+		c.Locals("user_id", userID)
+		// set user context for downstream handlers
+		ctx := context.WithValue(c.Context(), "user_id", userID)
+		c.SetContext(ctx)
+
+		return c.Next()
+	}
 }

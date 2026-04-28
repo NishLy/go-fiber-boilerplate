@@ -28,6 +28,24 @@ func GetFGAWriteOptions(fgaClient *client.OpenFgaClient, indentifier string) *cl
 	return &options
 }
 
+func GetFGAClientCheckOptions(fgaClient *client.OpenFgaClient, indentifier string) *client.ClientCheckOptions {
+	modelID, _ := cache.Get[string](GetFGAClientModelKey(indentifier), 0, nil)
+
+	if modelID == "" {
+		latestModel, err := fgaClient.ReadLatestAuthorizationModel(context.Background()).Execute()
+		if err == nil {
+			modelID = latestModel.AuthorizationModel.GetId()
+			cache.Set(GetFGAClientModelKey(indentifier), modelID, time.Hour)
+		}
+	}
+
+	var options = client.ClientCheckOptions{
+		AuthorizationModelId: openfga.PtrString(modelID),
+	}
+
+	return &options
+}
+
 func WriteRelationships(clientIns *client.OpenFgaClient,
 	options *client.ClientWriteOptions,
 	relationships []client.ClientTupleKey) error {

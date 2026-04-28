@@ -3,23 +3,18 @@ model
 
 type system
   relations
-    define admin: [user]
+    define admin: [user, group#member]  
+
+type group
+  relations
+    define member: [user, group#member] 
 
 type branch
   relations
-    define member: [user]
+    define member: [user, group#member]  
 
 type user
   relations
-    define owner: [user]       
-    define branch: [branch]
-
-    define viewer_branch: [branch#member]
+    define owner: [user]
     define viewer_all: [system#admin]
-
-    define editor_all: [system#admin]
-    define deleter_all: [system#admin]
-
-    define can_view: owner or viewer_branch or viewer_all
-    define can_edit: owner or editor_all
-    define can_delete: owner or deleter_all
+    define can_view: owner or viewer_all 

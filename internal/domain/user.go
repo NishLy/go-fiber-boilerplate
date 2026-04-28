@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/NishLy/go-fiber-boilerplate/pkg"
+	pkg "github.com/NishLy/go-fiber-boilerplate/pkg/hash"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

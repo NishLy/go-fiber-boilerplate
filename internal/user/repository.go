@@ -8,6 +8,7 @@ import (
 	fga "github.com/NishLy/go-fiber-boilerplate/internal/openfga"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/request"
+	pkg "github.com/NishLy/go-fiber-boilerplate/pkg/context"
 	"github.com/openfga/go-sdk/client"
 	"github.com/pilagod/gorm-cursor-paginator/v2/paginator"
 	"go.uber.org/zap"
@@ -168,11 +169,46 @@ func (r *userRepository) GetUsers(ctx context.Context, pagination request.Pagina
 		p.SetAfterCursor(pagination.AfterCursor)
 	}
 
+	fgaClient, err := fga.GetFGAFromContext(ctx)
+
+	if err != nil {
+		r.logger.Errorf("Failed to get OpenFGA client from context: %v", err)
+		return nil, paginator.Cursor{}, apperror.InternalErr(err)
+	}
+
+	userID, err := pkg.GetSubFromContext(ctx)
+	if err != nil {
+		r.logger.Errorf("Failed to get user ID from context: %v", err)
+		return nil, paginator.Cursor{}, apperror.InternalErr(err)
+	}
+
+	body := client.ClientCheckRequest{
+		User:     "user:" + userID,
+		Relation: "admin",
+		Object:   "system:main",
+	}
+
+	tenantID := database.GetIndentifier(ctx)
+
+	data, err := fgaClient.Check(context.Background()).
+		Body(body).
+		Options(*fga.GetFGAClientCheckOptions(fgaClient, tenantID)).
+		Execute()
+
+	if err != nil {
+		r.logger.Errorf("Failed to check relationship in OpenFGA: %v", err)
+		return nil, paginator.Cursor{}, apperror.InternalErr(err)
+	}
+
 	query := db.Model(&domain.User{})
 
 	if pagination.Search != "" {
 		searchTerm := "%" + pagination.Search + "%"
 		query = query.Where("name ILIKE ? OR email ILIKE ?", searchTerm, searchTerm)
+	}
+
+	if data.Allowed != nil && !*data.Allowed {
+		query = query.Where("id = ?", userID)
 	}
 
 	result, cursor, err := p.Paginate(query, &users)

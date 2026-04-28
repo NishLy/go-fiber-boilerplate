@@ -9,7 +9,7 @@ import (
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"github.com/NishLy/go-fiber-boilerplate/internal/token"
 	"github.com/NishLy/go-fiber-boilerplate/internal/user"
-	"github.com/NishLy/go-fiber-boilerplate/pkg"
+	hash "github.com/NishLy/go-fiber-boilerplate/pkg/hash"
 	jwt "github.com/NishLy/go-fiber-boilerplate/pkg/jwt"
 )
 
@@ -37,7 +37,7 @@ func (j *authService) Login(ctx context.Context, email, password string) (string
 		return "", "", apperror.UnauthorizedErr(err)
 	}
 
-	if !pkg.CheckPasswordHash(password, user.Password) {
+	if !hash.CheckPasswordHash(password, user.Password) {
 		return "", "", apperror.UnauthorizedErr(fmt.Errorf("invalid credentials"), "Invalid email or password")
 	}
 

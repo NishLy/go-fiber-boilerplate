@@ -34,7 +34,7 @@ func NewTokenService(logger zap.SugaredLogger, r TokenRepository) TokenService {
 func (s *tokenService) GenerateToken(ctx context.Context, userID string, expires time.Duration, tokenType string) (string, error) {
 	cfg := config.Get()
 
-	tokenStr, err := pkg.GenerateToken(userID, cfg.JWTSecret, tokenType, int64(expires.Seconds()))
+	tokenStr, err := pkg.GenerateToken(userID, cfg.JWT_SECRET, tokenType, int64(expires.Seconds()))
 
 	if err != nil {
 		s.logger.Errorf("Failed to generate token: %v", err)
@@ -51,11 +51,11 @@ func (s *tokenService) GenerateToken(ctx context.Context, userID string, expires
 }
 
 func (s *tokenService) GenerateRefreshToken(ctx context.Context, userID string) (string, error) {
-	return s.GenerateToken(ctx, userID, time.Hour*24*7, TokenTypeRefresh)
+	return s.GenerateToken(ctx, userID, time.Duration(config.Get().REFRESH_TOKEN_EXPIRATION)*time.Second, TokenTypeRefresh)
 }
 
 func (s *tokenService) GenerateAccessToken(ctx context.Context, userID string) (string, error) {
-	return s.GenerateToken(ctx, userID, time.Second*2, TokenTypeAccess)
+	return s.GenerateToken(ctx, userID, time.Duration(config.Get().ACCESS_TOKEN_EXPIRATION)*time.Second, TokenTypeAccess)
 }
 
 func (s *tokenService) DeleteTokenByUserID(ctx context.Context, userID string, tokenType string) error {
@@ -63,7 +63,7 @@ func (s *tokenService) DeleteTokenByUserID(ctx context.Context, userID string, t
 }
 
 func (s *tokenService) GenerateForgotPasswordToken(ctx context.Context, userID string) (string, error) {
-	return s.GenerateToken(ctx, userID, time.Hour*1, TokenTypeResetPassword)
+	return s.GenerateToken(ctx, userID, time.Duration(config.Get().FORGOT_PASSWORD_TOKEN_EXPIRATION)*time.Second, TokenTypeResetPassword)
 }
 
 func (s *tokenService) GetTokenFromUserID(ctx context.Context, userID string, tokenType string) (string, error) {

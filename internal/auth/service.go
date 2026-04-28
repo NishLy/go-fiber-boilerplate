@@ -70,7 +70,7 @@ func (j *authService) Register(ctx context.Context, req RegisterRequest) (*domai
 }
 
 func (j *authService) RefreshToken(ctx context.Context, refreshToken string) (string, error) {
-	userId, err := jwt.VerifyToken(refreshToken, config.Get().JWTSecret, token.TokenTypeRefresh)
+	userId, err := jwt.VerifyToken(refreshToken, config.Get().JWT_SECRET, token.TokenTypeRefresh)
 
 	if err != nil {
 		return "", apperror.UnauthorizedErr(err, "Invalid refresh token")

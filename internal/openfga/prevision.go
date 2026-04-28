@@ -17,7 +17,7 @@ import (
 func CreateStore(ctx context.Context, identifier string) (*string, *string, error) {
 	cfg := config.Get()
 
-	logger.Sugar.Debugf("Creating new OpenFGA store with identifier: %s", identifier)
+	logger.Sugar.Infof("Creating new OpenFGA store with identifier: %s", identifier)
 	fgaClient, err := client.NewSdkClient(&client.ClientConfiguration{
 		ApiUrl: cfg.OPEN_FGA_API_URL, // OpenFGA server address
 	})

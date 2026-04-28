@@ -8,6 +8,7 @@ import (
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	t "github.com/NishLy/go-fiber-boilerplate/internal/token"
 	pkg "github.com/NishLy/go-fiber-boilerplate/pkg/jwt"
+	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -26,9 +27,10 @@ func Protected() fiber.Handler {
 			return apperror.UnauthorizedErr(nil, "Please authenticate")
 		}
 
-		userID, err := pkg.VerifyToken(token, cfg.JWTSecret, t.TokenTypeAccess)
+		userID, err := pkg.VerifyToken(token, cfg.JWT_SECRET, t.TokenTypeAccess)
 
 		if err != nil {
+			logger.Sugar.Debugf("Error verifying token: %v", err)
 			return apperror.UnauthorizedErr(nil, "Please authenticate")
 		}
 

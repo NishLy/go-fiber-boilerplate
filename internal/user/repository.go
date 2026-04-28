@@ -4,10 +4,13 @@ import (
 	"context"
 
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
+	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
+	fga "github.com/NishLy/go-fiber-boilerplate/internal/openfga"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/request"
 	"github.com/pilagod/gorm-cursor-paginator/v2/paginator"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type UserRepository interface {
@@ -33,7 +36,37 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) erro
 		return database.Wrap(err)
 	}
 
-	err = db.DB.Create(user).Error
+	_, err = fga.GetFGAFromContext(ctx)
+	if err != nil {
+		r.logger.Errorf("Failed to get OpenFGA client from context: %v", err)
+		return apperror.InternalErr(err)
+	}
+
+	err = db.DB.Transaction(func(tx *gorm.DB) error {
+		err = tx.Create(user).Error
+
+		if err != nil {
+			r.logger.Errorf("Failed to create user: %v", err)
+			return database.Wrap(err)
+		}
+
+		err = tx.Where("email = ?", user.Email).First(&user).Error
+		if err != nil {
+			r.logger.Errorf("Failed to get user by email: %v", err)
+			return database.Wrap(err)
+		}
+
+		// body := ClientWriteRequest{
+		// 	Writes: []ClientTupleKey{
+		// 		{
+		// 			User:     "user:anne",
+		// 			Relation: "reader",
+		// 			Object:   "document:Z",
+		// 		},
+		// 	},
+		// }
+		return nil
+	})
 
 	if err != nil {
 		r.logger.Errorf("Failed to create user: %v", err)

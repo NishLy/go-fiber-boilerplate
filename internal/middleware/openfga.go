@@ -2,9 +2,7 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/NishLy/go-fiber-boilerplate/config"
 	fga "github.com/NishLy/go-fiber-boilerplate/internal/openfga"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/gofiber/fiber/v3"
@@ -20,8 +18,7 @@ func InjectOpenFGA() fiber.Handler {
 			})
 		}
 
-		cfg := config.Get()
-		fgaClient, err := fga.GetFGAClient(fmt.Sprintf("%s%s", cfg.APP_NAME, tenantID))
+		fgaClient, err := fga.GetFGAClient(tenantID)
 		if err != nil {
 			logger.Sugar.Errorf("Failed to get OpenFGA client for tenant %s: %v", tenantID, err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

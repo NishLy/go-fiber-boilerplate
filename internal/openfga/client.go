@@ -35,16 +35,16 @@ func isValidULID(s string) bool {
 }
 
 func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
-	if client, exists := fgaClients[identifier]; exists {
-		return client, nil
-	}
-
-	key := fmt.Sprintf("fga_client_%s", identifier)
+	key := GetFGAClientStoreKey(identifier)
 
 	cachedKey, _ := cache.Get[string](key, 0, nil)
 
 	if cachedKey != "" {
 		identifier = cachedKey
+	}
+
+	if client, exists := fgaClients[identifier]; exists {
+		return client, nil
 	}
 
 	logger.Sugar.Infof("Initialized new OpenFGA client for identifier %s", identifier)
@@ -62,7 +62,7 @@ func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
 		cache.Set(key, *storeID, time.Hour)
 		return fgaClient, nil
 	} else {
-		storeID, err := CreateStore(context.Background(), identifier)
+		storeID, modelID, err := CreateStore(context.Background(), identifier)
 		if err != nil {
 			return nil, fmt.Errorf("failed to provision new store: %w", err)
 		}
@@ -73,6 +73,7 @@ func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
 		}
 		fgaClients[*storeID] = fgaClient
 		cache.Set(key, *storeID, time.Hour)
+		cache.Set(GetFGAClientModelKey(identifier), *modelID, time.Hour)
 		return fgaClient, nil
 	}
 }

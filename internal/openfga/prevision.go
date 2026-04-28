@@ -14,7 +14,7 @@ import (
 	"github.com/openfga/language/pkg/go/transformer"
 )
 
-func CreateStore(ctx context.Context, identifier string) (*string, error) {
+func CreateStore(ctx context.Context, identifier string) (*string, *string, error) {
 	cfg := config.Get()
 
 	logger.Sugar.Debugf("Creating new OpenFGA store with identifier: %s", identifier)
@@ -23,7 +23,7 @@ func CreateStore(ctx context.Context, identifier string) (*string, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
+		return nil, nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
 	}
 
 	store, err := fgaClient.CreateStore(ctx).
@@ -31,17 +31,17 @@ func CreateStore(ctx context.Context, identifier string) (*string, error) {
 			Name: identifier,
 		}).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create fga store: %w", err)
+		return nil, nil, fmt.Errorf("failed to create fga store: %w", err)
 	}
 
 	storeID := store.GetId()
 	// init models for the store
-	_, err = MigrateFromFolder(ctx, storeID, cfg.OPEN_FGA_MODEL_DIR)
+	modelID, err := MigrateFromFolder(ctx, storeID, cfg.OPEN_FGA_MODEL_DIR)
 	if err != nil {
-		return nil, fmt.Errorf("failed to migrate models: %w", err)
+		return nil, nil, fmt.Errorf("failed to migrate models: %w", err)
 	}
 
-	return &storeID, nil
+	return &storeID, &modelID, nil
 }
 
 func MigrateFromFolder(ctx context.Context, storeID string, folderPath string) (string, error) {

@@ -5,7 +5,8 @@ import (
 )
 
 type Config struct {
-	Port               string
+	HOST               string
+	PORT               string
 	JWTSecret          string
 	DBHOST             string
 	DBPORT             string
@@ -17,6 +18,7 @@ type Config struct {
 	REDIS_HOST         string
 	REDIS_PORT         string
 	DB_DEVELOPMENT_URL string
+	ENV                string
 }
 
 var cfg *Config
@@ -35,7 +37,8 @@ func Load() (*Config, error) {
 	}
 
 	cfg = &Config{
-		Port:               viper.GetString("PORT"),
+		HOST:               viper.GetString("HOST"),
+		PORT:               viper.GetString("PORT"),
 		JWTSecret:          viper.GetString("JWT_SECRET"),
 		DBHOST:             viper.GetString("DB_HOST"),
 		DBPORT:             viper.GetString("DB_PORT"),
@@ -47,6 +50,7 @@ func Load() (*Config, error) {
 		REDIS_HOST:         viper.GetString("REDIS_HOST"),
 		REDIS_PORT:         viper.GetString("REDIS_PORT"),
 		DB_DEVELOPMENT_URL: viper.GetString("DB_DEVELOPMENT_URL"),
+		ENV:                viper.GetString("ENV"),
 	}
 
 	return cfg, nil

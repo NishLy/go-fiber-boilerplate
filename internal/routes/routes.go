@@ -12,7 +12,7 @@ import (
 func Setup(appContainer *app.App, app *fiber.App) {
 	api := app.Group("/api").Group("/v1")
 
-	sugarLogger := logger.Log.Sugar()
+	sugarLogger := logger.Sugar
 
 	// init user repository and service
 	userRepo := user.NewUserRepository(*sugarLogger)
@@ -30,7 +30,10 @@ func Setup(appContainer *app.App, app *fiber.App) {
 	user.UserRouter(api, &userService)
 
 	// init docs route
-	DocsRoutes(api)
+	if appContainer.Config.ENV == "development" {
+		sugarLogger.Info("Running in development mode, enabling Swagger docs")
+		DocsRoutes(api)
+	}
 
 	// app.Get("/ws", websocket.New(ws.Handler(appContainer.WsHub)))
 

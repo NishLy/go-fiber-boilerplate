@@ -53,10 +53,10 @@ func main() {
 
 	routes.Setup(appContainer, fiberApp)
 
-	logger.Log.Info("Starting server on :3000")
+	logger.Log.Info("Starting server on " + configApp.HOST + ":" + configApp.PORT)
 
 	// Server configuration
-	address := ":3000"
+	address := configApp.HOST + ":" + configApp.PORT
 	// Channel to capture server errors
 	serverErrors := make(chan error, 1)
 	// Start server in a separate goroutine
@@ -66,7 +66,9 @@ func main() {
 }
 
 func startServer(app *fiber.App, address string, serverErrors chan<- error) {
-	if err := app.Listen(address); err != nil {
+	if err := app.Listen(address, fiber.ListenConfig{
+		EnablePrefork: config.Get().ENV == "production",
+	}); err != nil {
 		serverErrors <- err
 	}
 }

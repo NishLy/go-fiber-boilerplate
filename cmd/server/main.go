@@ -28,7 +28,7 @@ func main() {
 	configApp, err := config.Load()
 
 	if err != nil {
-		logger.Log.Fatal("Failed to load config", zap.Error(err))
+		logger.Sugar.Fatal("Failed to load config", zap.Error(err))
 	}
 
 	fiberApp := fiber.New(fiber.Config{ErrorHandler: apperror.ErrorHandler})
@@ -53,7 +53,7 @@ func main() {
 
 	routes.Setup(appContainer, fiberApp)
 
-	logger.Log.Info("Starting server on " + configApp.HOST + ":" + configApp.PORT)
+	logger.Sugar.Info("Starting server on " + configApp.HOST + ":" + configApp.PORT)
 
 	// Server configuration
 	address := configApp.HOST + ":" + configApp.PORT
@@ -76,13 +76,13 @@ func startServer(app *fiber.App, address string, serverErrors chan<- error) {
 func handleGracefulShutdown(ctx context.Context, app *fiber.App, serverErrors <-chan error) {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-	sugar := logger.Log.Sugar()
+	sugar := logger.Sugar
 
 	select {
 	case err := <-serverErrors:
 		sugar.Fatalf("Server error: %v", err)
 	case <-quit:
-		logger.Log.Info("Shutting down server...")
+		sugar.Info("Shutting down server...")
 		if err := app.Shutdown(); err != nil {
 			sugar.Fatalf("Error during server shutdown: %v", err)
 		}

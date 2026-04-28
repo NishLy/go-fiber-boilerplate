@@ -36,7 +36,7 @@ func Get[T any](key string, expiration time.Duration, fallback func() (T, error)
 
 	val, err := GetRedis().Get(ctx, key).Result()
 
-	logger.Log.Info(fmt.Sprintf("Cache lookup for key: %s", key))
+	logger.Sugar.Info(fmt.Sprintf("Cache lookup for key: %s", key))
 
 	if err == nil {
 		var data T

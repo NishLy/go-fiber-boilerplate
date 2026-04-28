@@ -27,7 +27,7 @@ func Logger() fiber.Handler {
 
 		reqID := c.GetRespHeader("X-Request-ID")
 
-		logger.Log.Info("http_request",
+		logger.Sugar.Info("http_request",
 			zap.String("request_id", reqID),
 			zap.String("method", c.Method()),
 			zap.String("path", c.Path()),

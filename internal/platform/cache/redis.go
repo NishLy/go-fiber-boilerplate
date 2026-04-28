@@ -36,8 +36,6 @@ func Get[T any](key string, expiration time.Duration, fallback func() (T, error)
 
 	val, err := GetRedis().Get(ctx, key).Result()
 
-	logger.Sugar.Info(fmt.Sprintf("Cache lookup for key: %s", key))
-
 	if err == nil {
 		var data T
 		if json.Unmarshal([]byte(val), &data) == nil {
@@ -47,10 +45,12 @@ func Get[T any](key string, expiration time.Duration, fallback func() (T, error)
 	}
 
 	if err != redis.Nil {
+		logger.Sugar.Errorf("Error getting key %s from cache: %v", key, err)
 		return zero, err
 	}
 
 	if fallback == nil {
+		logger.Sugar.Debugf("Cache miss for key %s and no fallback provided", key)
 		return zero, fmt.Errorf("cache miss for key %s and no fallback provided", key)
 	}
 

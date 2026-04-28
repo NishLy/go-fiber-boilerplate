@@ -44,9 +44,7 @@ func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
 	cachedKey, _ := cache.Get[string](key, 0, nil)
 
 	if cachedKey != "" {
-		if client, exists := fgaClients[cachedKey]; exists {
-			return client, nil
-		}
+		identifier = cachedKey
 	}
 
 	logger.Sugar.Infof("Initialized new OpenFGA client for identifier %s", identifier)

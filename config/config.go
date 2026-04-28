@@ -5,6 +5,7 @@ import (
 )
 
 type Config struct {
+	APP_NAME           string
 	HOST               string
 	PORT               string
 	JWTSecret          string
@@ -19,6 +20,7 @@ type Config struct {
 	REDIS_PORT         string
 	DB_DEVELOPMENT_URL string
 	ENV                string
+	OPEN_FGA_API_URL   string
 }
 
 var cfg *Config
@@ -37,6 +39,7 @@ func Load() (*Config, error) {
 	}
 
 	cfg = &Config{
+		APP_NAME:           viper.GetString("APP_NAME"),
 		HOST:               viper.GetString("HOST"),
 		PORT:               viper.GetString("PORT"),
 		JWTSecret:          viper.GetString("JWT_SECRET"),
@@ -51,6 +54,7 @@ func Load() (*Config, error) {
 		REDIS_PORT:         viper.GetString("REDIS_PORT"),
 		DB_DEVELOPMENT_URL: viper.GetString("DB_DEVELOPMENT_URL"),
 		ENV:                viper.GetString("ENV"),
+		OPEN_FGA_API_URL:   viper.GetString("OPEN_FGA_API_URL"),
 	}
 
 	return cfg, nil

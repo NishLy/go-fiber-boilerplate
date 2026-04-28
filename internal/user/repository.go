@@ -6,8 +6,11 @@ import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	fga "github.com/NishLy/go-fiber-boilerplate/internal/openfga"
+	"github.com/NishLy/go-fiber-boilerplate/internal/platform/cache"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/request"
+	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
+	"github.com/openfga/go-sdk/client"
 	"github.com/pilagod/gorm-cursor-paginator/v2/paginator"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -36,13 +39,13 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) erro
 		return database.Wrap(err)
 	}
 
-	_, err = fga.GetFGAFromContext(ctx)
-	if err != nil {
-		r.logger.Errorf("Failed to get OpenFGA client from context: %v", err)
-		return apperror.InternalErr(err)
-	}
-
 	err = db.DB.Transaction(func(tx *gorm.DB) error {
+		fgaClient, err := fga.GetFGAFromContext(ctx)
+		if err != nil {
+			r.logger.Errorf("Failed to get OpenFGA client from context: %v", err)
+			return apperror.InternalErr(err)
+		}
+
 		err = tx.Create(user).Error
 
 		if err != nil {
@@ -56,15 +59,30 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) erro
 			return database.Wrap(err)
 		}
 
-		// body := ClientWriteRequest{
-		// 	Writes: []ClientTupleKey{
-		// 		{
-		// 			User:     "user:anne",
-		// 			Relation: "reader",
-		// 			Object:   "document:Z",
-		// 		},
-		// 	},
-		// }
+		body := client.ClientWriteRequest{
+			Writes: []client.ClientTupleKey{
+				{
+					User:     "user:" + user.ID.String(),
+					Relation: "self",
+					Object:   "user:" + user.ID.String(),
+				},
+			},
+		}
+
+		storeId, _ := fgaClient.GetStoreId()
+		tenant_id := ctx.Value("tenant_id").(string)
+		modelID, _ := cache.Get[string](fga.GetFGAClientModelKey(tenant_id), 0, nil)
+		logger.Sugar.Debugf("Using OPenFGA Store ID: %s %v and Model ID: %s for user creation", storeId, tenant_id, modelID)
+		_, err = fgaClient.Write(context.Background()).
+			Body(body).
+			Options(*fga.GetFGAWriteOptions(modelID)).
+			Execute()
+
+		if err != nil {
+			r.logger.Errorf("Failed to write relationships to OpenFGA: %v", err)
+			return apperror.InternalErr(err)
+		}
+
 		return nil
 	})
 

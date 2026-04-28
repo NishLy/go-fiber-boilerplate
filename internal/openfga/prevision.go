@@ -24,7 +24,7 @@ func CreateStore(ctx context.Context, identifier string) (*string, error) {
 		return nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
 	}
 
-	fmt.Printf("Provisioning new store with identifier: %s\n", identifier)
+	("Provisioning new store with identifier: %s\n", identifier)
 	store, err := fgaClient.CreateStore(ctx).
 		Body(client.ClientCreateStoreRequest{
 			Name: identifier,
@@ -34,7 +34,7 @@ func CreateStore(ctx context.Context, identifier string) (*string, error) {
 	}
 
 	storeID := store.GetId()
-	fmt.Printf("Store created successfully! Store ID: %s\n", storeID)
+	("Store created successfully! Store ID: %s\n", storeID)
 	// init models for the store
 	_, err = MigrateFromFolder(ctx, storeID, cfg.OPEN_FGA_MODEL_DIR)
 	if err != nil {
@@ -75,7 +75,7 @@ func MigrateFromFolder(ctx context.Context, storeID string, folderPath string) (
 			return "", fmt.Errorf("failed to read file %q: %w", filePath, err)
 		}
 		dslParts = append(dslParts, string(data))
-		fmt.Printf("  Loaded: %s\n", entry.Name())
+		("  Loaded: %s\n", entry.Name())
 	}
 
 	if len(dslParts) == 0 {
@@ -116,6 +116,6 @@ func MigrateFromFolder(ctx context.Context, storeID string, folderPath string) (
 	}
 
 	modelID := resp.GetAuthorizationModelId()
-	fmt.Printf("Migration successful! Model ID: %s\n", modelID)
+	("Migration successful! Model ID: %s\n", modelID)
 	return modelID, nil
 }

@@ -99,7 +99,7 @@ func CleanupDBs(maxIdleTime time.Duration) {
 		if currentTime-dbStruct.LastUsed > int64(maxIdleTime.Seconds()) {
 			err := CloseDB(identifier)
 			if err != nil {
-				fmt.Printf("Failed to close idle DB connection for identifier %s: %v\n", identifier, err)
+				("Failed to close idle DB connection for identifier %s: %v\n", identifier, err)
 			}
 		}
 	}

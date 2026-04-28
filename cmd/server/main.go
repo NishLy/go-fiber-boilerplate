@@ -45,6 +45,7 @@ func main() {
 	fiberApp.Use(middleware.LimiterConfig())
 	fiberApp.Use(middleware.CORSConfig())
 	fiberApp.Use(middleware.InjectTenantIdentifier())
+	fiberApp.Use(middleware.InjectOpenFGA())
 
 	appContainer := &app.App{
 		Config: configApp,

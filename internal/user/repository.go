@@ -6,10 +6,8 @@ import (
 	"github.com/NishLy/go-fiber-boilerplate/internal/domain"
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	fga "github.com/NishLy/go-fiber-boilerplate/internal/openfga"
-	"github.com/NishLy/go-fiber-boilerplate/internal/platform/cache"
 	"github.com/NishLy/go-fiber-boilerplate/internal/platform/database"
 	"github.com/NishLy/go-fiber-boilerplate/internal/request"
-	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/openfga/go-sdk/client"
 	"github.com/pilagod/gorm-cursor-paginator/v2/paginator"
 	"go.uber.org/zap"
@@ -63,19 +61,17 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) erro
 			Writes: []client.ClientTupleKey{
 				{
 					User:     "user:" + user.ID.String(),
-					Relation: "self",
+					Relation: "owner",
 					Object:   "user:" + user.ID.String(),
 				},
 			},
 		}
 
-		storeId, _ := fgaClient.GetStoreId()
-		tenant_id := ctx.Value("tenant_id").(string)
-		modelID, _ := cache.Get[string](fga.GetFGAClientModelKey(tenant_id), 0, nil)
-		logger.Sugar.Debugf("Using OPenFGA Store ID: %s %v and Model ID: %s for user creation", storeId, tenant_id, modelID)
+		tenantID := database.GetIndentifier(ctx)
+
 		_, err = fgaClient.Write(context.Background()).
 			Body(body).
-			Options(*fga.GetFGAWriteOptions(modelID)).
+			Options(*fga.GetFGAWriteOptions(fgaClient, tenantID)).
 			Execute()
 
 		if err != nil {

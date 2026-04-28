@@ -7,25 +7,22 @@ import (
 	"path/filepath"
 	"strings"
 
+	"encoding/json"
+
 	"github.com/NishLy/go-fiber-boilerplate/config"
-	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
-	openfga "github.com/openfga/go-sdk"
 	"github.com/openfga/go-sdk/client"
 	"github.com/openfga/language/pkg/go/transformer"
 )
 
-func CreateStore(ctx context.Context, identifier string) (*string, *string, error) {
+type FGAIdentifier struct {
+	StoreID string
+	ModelID string
+}
+
+func CreateStore(fgaClient *client.OpenFgaClient, identifier string) (*client.OpenFgaClient, *FGAIdentifier, error) {
 	cfg := config.Get()
 
-	logger.Sugar.Infof("Creating new OpenFGA store with identifier: %s", identifier)
-	fgaClient, err := client.NewSdkClient(&client.ClientConfiguration{
-		ApiUrl: cfg.OPEN_FGA_API_URL, // OpenFGA server address
-	})
-
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
-	}
-
+	ctx := context.Background()
 	store, err := fgaClient.CreateStore(ctx).
 		Body(client.ClientCreateStoreRequest{
 			Name: identifier,
@@ -35,26 +32,22 @@ func CreateStore(ctx context.Context, identifier string) (*string, *string, erro
 	}
 
 	storeID := store.GetId()
-	// init models for the store
-	modelID, err := MigrateFromFolder(ctx, storeID, cfg.OPEN_FGA_MODEL_DIR)
+	if err := fgaClient.SetStoreId(storeID); err != nil {
+		return nil, nil, fmt.Errorf("failed to set store ID: %w", err)
+	}
+
+	modelID, err := MigrateFromFolder(fgaClient, cfg.OPEN_FGA_MODEL_DIR)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to migrate models: %w", err)
 	}
 
-	return &storeID, &modelID, nil
+	return fgaClient, &FGAIdentifier{
+		StoreID: storeID,
+		ModelID: modelID,
+	}, nil
 }
 
-func MigrateFromFolder(ctx context.Context, storeID string, folderPath string) (string, error) {
-
-	fgaClient, err := client.NewSdkClient(&client.ClientConfiguration{
-		ApiUrl:  config.Get().OPEN_FGA_API_URL, // OpenFGA server address
-		StoreId: storeID,                       // Created via CLI or API
-	})
-
-	if err != nil {
-		return "", fmt.Errorf("failed to initialize OpenFGA client: %w", err)
-	}
-
+func MigrateFromFolder(fgaClient *client.OpenFgaClient, folderPath string) (string, error) {
 	entries, err := os.ReadDir(folderPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read openfga folder %q: %w", folderPath, err)
@@ -84,36 +77,22 @@ func MigrateFromFolder(ctx context.Context, storeID string, folderPath string) (
 	// 2. Join all DSL parts and transform to an authorization model
 	combinedDSL := strings.Join(dslParts, "\n\n")
 
-	authModel, err := transformer.TransformDSLToProto(combinedDSL)
+	// Use the JSON transformer instead of proto
+	modelJSON, err := transformer.TransformDSLToJSON(combinedDSL)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse DSL: %w", err)
 	}
 
-	// 3. Convert proto TypeDefinitions to SDK TypeDefinitions
-	typeDefinitions := make([]openfga.TypeDefinition, 0, len(authModel.GetTypeDefinitions()))
-	for _, td := range authModel.GetTypeDefinitions() {
-		typeDefinitions = append(typeDefinitions, *openfga.NewTypeDefinition(td.GetType()))
+	var body client.ClientWriteAuthorizationModelRequest
+	if err := json.Unmarshal([]byte(modelJSON), &body); err != nil {
+		return "", fmt.Errorf("failed to unmarshal model JSON: %w", err)
 	}
 
-	openFGAConditions := make(map[string]openfga.Condition)
-	for name, condition := range authModel.GetConditions() {
-		openFGAConditions[name] = openfga.Condition{
-			Expression: condition.GetExpression(),
-		}
-	}
-
-	body := client.ClientWriteAuthorizationModelRequest{
-		SchemaVersion:   authModel.GetSchemaVersion(),
-		TypeDefinitions: typeDefinitions,
-		Conditions:      &openFGAConditions,
-	}
-
-	// 4. Write the merged model to the store
+	ctx := context.Background()
 	resp, err := fgaClient.WriteAuthorizationModel(ctx).Body(body).Execute()
 	if err != nil {
 		return "", fmt.Errorf("failed to write authorization model: %w", err)
 	}
 
-	modelID := resp.GetAuthorizationModelId()
-	return modelID, nil
+	return resp.GetAuthorizationModelId(), nil
 }

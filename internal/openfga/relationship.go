@@ -2,19 +2,27 @@ package fga
 
 import (
 	"context"
+	"time"
 
+	"github.com/NishLy/go-fiber-boilerplate/internal/platform/cache"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	openfga "github.com/openfga/go-sdk"
 	"github.com/openfga/go-sdk/client"
 )
 
-func GetFGAWriteOptions(indentifier string) *client.ClientWriteOptions {
-	var modelIDPtr *string
-	var options = client.ClientWriteOptions{}
+func GetFGAWriteOptions(fgaClient *client.OpenFgaClient, indentifier string) *client.ClientWriteOptions {
+	modelID, _ := cache.Get[string](GetFGAClientModelKey(indentifier), 0, nil)
 
-	if indentifier != "" {
-		modelIDPtr = openfga.PtrString(indentifier)
-		options.AuthorizationModelId = modelIDPtr
+	if modelID == "" {
+		latestModel, err := fgaClient.ReadLatestAuthorizationModel(context.Background()).Execute()
+		if err == nil {
+			modelID = latestModel.AuthorizationModel.GetId()
+			cache.Set(GetFGAClientModelKey(indentifier), modelID, time.Hour)
+		}
+	}
+
+	var options = client.ClientWriteOptions{
+		AuthorizationModelId: openfga.PtrString(modelID),
 	}
 
 	return &options

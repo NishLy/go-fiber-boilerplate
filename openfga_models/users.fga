@@ -11,7 +11,7 @@ type branch
 
 type user
   relations
-    define self: [user]
+    define owner: [user]       
     define branch: [branch]
 
     define viewer_branch: [branch#member]
@@ -20,6 +20,6 @@ type user
     define editor_all: [system#admin]
     define deleter_all: [system#admin]
 
-    define can_view: self or viewer_branch or viewer_all
-    define can_edit: self or editor_all
-    define can_delete: self or deleter_all
+    define can_view: owner or viewer_branch or viewer_all
+    define can_edit: owner or editor_all
+    define can_delete: owner or deleter_all

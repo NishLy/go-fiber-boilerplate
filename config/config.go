@@ -21,6 +21,7 @@ type Config struct {
 	DB_DEVELOPMENT_URL string
 	ENV                string
 	OPEN_FGA_API_URL   string
+	OPEN_FGA_MODEL_DIR string
 }
 
 var cfg *Config
@@ -55,6 +56,7 @@ func Load() (*Config, error) {
 		DB_DEVELOPMENT_URL: viper.GetString("DB_DEVELOPMENT_URL"),
 		ENV:                viper.GetString("ENV"),
 		OPEN_FGA_API_URL:   viper.GetString("OPEN_FGA_API_URL"),
+		OPEN_FGA_MODEL_DIR: viper.GetString("OPEN_FGA_MODEL_DIR"),
 	}
 
 	return cfg, nil

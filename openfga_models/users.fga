@@ -1,0 +1,25 @@
+model
+  schema 1.1
+
+type system
+  relations
+    define admin: [user]
+
+type branch
+  relations
+    define member: [user]
+
+type user
+  relations
+    define self: [user]
+    define branch: [branch]
+
+    define viewer_branch: [branch#member]
+    define viewer_all: [system#admin]
+
+    define editor_all: [system#admin]
+    define deleter_all: [system#admin]
+
+    define can_view: self or viewer_branch or viewer_all
+    define can_edit: self or editor_all
+    define can_delete: self or deleter_all

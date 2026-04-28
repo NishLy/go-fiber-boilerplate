@@ -15,7 +15,7 @@ var fgaClients = make(map[string]*client.OpenFgaClient)
 func InitOpenFGA(indentifier *string) (*client.OpenFgaClient, error) {
 	cfg := config.Get()
 
-	// change indentifier to ulid format: appname:tenantid
+	fmt.Printf("Initializing OpenFGA client for store ID: %s\n", *indentifier)
 
 	fgaClient, err := client.NewSdkClient(&client.ClientConfiguration{
 		ApiUrl:  cfg.OPEN_FGA_API_URL, // OpenFGA server address
@@ -27,30 +27,6 @@ func InitOpenFGA(indentifier *string) (*client.OpenFgaClient, error) {
 	}
 
 	return fgaClient, nil
-}
-
-func CreateStore(ctx context.Context, identifier string) (*string, error) {
-	cfg := config.Get()
-
-	fgaClient, err := client.NewSdkClient(&client.ClientConfiguration{
-		ApiUrl: cfg.OPEN_FGA_API_URL, // OpenFGA server address
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
-	}
-
-	store, err := fgaClient.CreateStore(ctx).
-		Body(client.ClientCreateStoreRequest{
-			Name: identifier,
-		}).Execute()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create fga store: %w", err)
-	}
-
-	storeID := store.GetId()
-
-	return &storeID, nil
 }
 
 func isValidULID(s string) bool {
@@ -75,19 +51,20 @@ func GetFGAClient(identifier string) (*client.OpenFgaClient, error) {
 			return nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
 		}
 		fgaClients[*storeID] = fgaClient
+		return fgaClient, nil
 	} else {
-		name := fmt.Sprintf("%s:%s", config.Get().APP_NAME, identifier)
-		storeID, err := CreateStore(context.Background(), name)
+		storeID, err := CreateStore(context.Background(), identifier)
 		if err != nil {
 			return nil, fmt.Errorf("failed to provision new store: %w", err)
 		}
 
+		fmt.Printf("Provisioned new store with ID: %s\n", *storeID)
 		fgaClient, err = InitOpenFGA(storeID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize OpenFGA client: %w", err)
 		}
+		fmt.Printf("FGA %v client initialized successfully for store ID: %s\n", fgaClient, *storeID)
+		fgaClients[*storeID] = fgaClient
+		return fgaClient, nil
 	}
-
-	fgaClients[*storeID] = fgaClient
-	return fgaClient, nil
 }

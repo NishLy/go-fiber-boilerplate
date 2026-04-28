@@ -12,7 +12,7 @@ import (
 )
 
 type AuthServiceInterface interface {
-	Login(ctx context.Context, email, password string) (string, error)
+	Login(ctx context.Context, email, password string) (string, string, error)
 	Register(ctx context.Context, req RegisterRequest) (string, error)
 }
 
@@ -28,22 +28,27 @@ func NewAuthService(userService user.UserService, tokenService token.TokenServic
 	}
 }
 
-func (j *authService) Login(ctx context.Context, email, password string) (string, error) {
+func (j *authService) Login(ctx context.Context, email, password string) (string, string, error) {
 	user, err := j.userService.GetUserFromEmail(ctx, email)
 	if err != nil {
-		return "", apperror.UnauthorizedErr(err)
+		return "", "", apperror.UnauthorizedErr(err)
 	}
 
 	if !pkg.CheckPasswordHash(password, user.Password) {
-		return "", apperror.UnauthorizedErr(fmt.Errorf("invalid credentials"), "Invalid email or password")
+		return "", "", apperror.UnauthorizedErr(fmt.Errorf("invalid credentials"), "Invalid email or password")
 	}
 
 	tokenStr, err := j.tokenService.GenerateAccessToken(ctx, user.ID.String())
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return tokenStr, nil
+	refreshTokenStr, err := j.tokenService.GenerateRefreshToken(ctx, user.ID.String())
+	if err != nil {
+		return "", "", err
+	}
+
+	return tokenStr, refreshTokenStr, nil
 }
 
 func (j *authService) Register(ctx context.Context, req RegisterRequest) (*domain.User, error) {

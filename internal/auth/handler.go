@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/NishLy/go-fiber-boilerplate/config"
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	"github.com/NishLy/go-fiber-boilerplate/internal/response"
 	"github.com/NishLy/go-fiber-boilerplate/pkg/validator"
@@ -43,10 +44,20 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 		return apperror.ValidationErr(validationErrors)
 	}
 
-	token, err := a.authService.Login(c.Context(), req.Email, req.Password)
+	token, refreshToken, err := a.authService.Login(c.Context(), req.Email, req.Password)
 	if err != nil {
 		return err
 	}
+
+	cfg := config.Get()
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		HTTPOnly: true,
+		Secure:   cfg.ENV == "production",
+		SameSite: "Strict",
+	})
 
 	return c.Status(fiber.StatusOK).
 		JSON(response.GenericSuccessResponse[fiber.Map]{
@@ -55,7 +66,8 @@ func (a *authHandler) Login(c fiber.Ctx) error {
 				Message: "Login successful",
 			},
 			Data: fiber.Map{
-				"token": token,
+				"token":        token,
+				"refreshToken": refreshToken,
 			},
 		})
 }

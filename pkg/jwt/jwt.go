@@ -13,6 +13,11 @@ func VerifyToken(tokenStr, secret, tokenType string) (string, error) {
 	})
 
 	if err != nil || !token.Valid {
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				return "", errors.New("TOKEN_EXPIRED")
+			}
+		}
 		return "", errors.New("INVALID_TOKEN")
 	}
 

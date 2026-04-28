@@ -8,6 +8,7 @@ import (
 	apperror "github.com/NishLy/go-fiber-boilerplate/internal/error"
 	t "github.com/NishLy/go-fiber-boilerplate/internal/token"
 	pkg "github.com/NishLy/go-fiber-boilerplate/pkg/jwt"
+	"github.com/NishLy/go-fiber-boilerplate/pkg/logger"
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -28,7 +29,18 @@ func Protected() fiber.Handler {
 
 		userID, err := pkg.VerifyToken(token, cfg.JWTSecret, t.TokenTypeAccess)
 
-		if err != nil {
+		isRefresh := false
+
+		if err.Error() == "TOKEN_EXPIRED" {
+			logger.Sugar.Info("Access token expired, attempting to refresh")
+			token, err = refreshProtected(c)
+			if err != nil {
+				return err
+			}
+			isRefresh = true
+		}
+
+		if err != nil && !isRefresh {
 			return apperror.UnauthorizedErr(nil, "Please authenticate")
 		}
 
@@ -39,4 +51,33 @@ func Protected() fiber.Handler {
 
 		return c.Next()
 	}
+}
+
+func refreshProtected(c fiber.Ctx) (string, error) {
+	cfg, err := config.Load()
+
+	refreshToken := c.Cookies("refresh_token")
+
+	if err != nil {
+		panic(err)
+	}
+
+	if refreshToken == "" {
+		return "", apperror.UnauthorizedErr(nil, "Please authenticate")
+	}
+
+	userID, err := pkg.VerifyToken(refreshToken, cfg.JWTSecret, t.TokenTypeRefresh)
+
+	if err != nil {
+		if err.Error() == "TOKEN_EXPIRED" {
+			return "", apperror.UnauthorizedErr(nil, "Token expired, please login again")
+		}
+
+		return "", apperror.UnauthorizedErr(nil, "Please authenticate")
+	}
+
+	tokenService := t.NewTokenService(*logger.Sugar, t.NewTokenRepository(*logger.Sugar))
+	newAccessToken, err := tokenService.GenerateAccessToken(c.Context(), userID)
+
+	return newAccessToken, nil
 }

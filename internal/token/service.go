@@ -54,7 +54,7 @@ func (s *tokenService) GenerateRefreshToken(ctx context.Context, userID string) 
 }
 
 func (s *tokenService) GenerateAccessToken(ctx context.Context, userID string) (string, error) {
-	return s.GenerateToken(ctx, userID, time.Hour*1, TokenTypeAccess)
+	return s.GenerateToken(ctx, userID, time.Second*2, TokenTypeAccess)
 }
 
 func (s *tokenService) DeleteTokenByUserID(ctx context.Context, userID string, tokenType string) error {
